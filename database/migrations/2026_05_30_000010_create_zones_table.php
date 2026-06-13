@@ -11,9 +11,11 @@ return new class extends Migration
         Schema::create('zones', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->decimal('area', 12, 2)->nullable();
+            $table->decimal('area', 14, 6)->nullable();
+            $table->decimal('avg_waste_kg', 10, 2)->nullable();
             $table->text('description')->nullable();
-            $table->foreignId('sector_id')->constrained()->cascadeOnDelete();
+            $table->string('status', 20)->default('active');
+            $table->foreignId('sector_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('district_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });

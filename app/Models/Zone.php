@@ -12,9 +12,16 @@ class Zone extends Model
     protected $fillable = [
         'name',
         'area',
+        'avg_waste_kg',
         'description',
+        'status',
         'sector_id',
         'district_id',
+    ];
+
+    protected $casts = [
+        'area'         => 'decimal:6',
+        'avg_waste_kg' => 'decimal:2',
     ];
 
     public function sector(): BelongsTo

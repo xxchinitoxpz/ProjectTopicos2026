@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('staff', function (Blueprint $table) {
-            $table->integer('*')->default(30)->after('address');
+            $table->integer('vacation_days')->default(30)->after('address');
         });
     }
 

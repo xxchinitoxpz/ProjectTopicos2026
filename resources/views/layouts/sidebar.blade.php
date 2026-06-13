@@ -3,7 +3,7 @@
        x-data="{ 
            openVehicles: {{ request()->routeIs('admin.vehicle*') || request()->routeIs('admin.brand*') ? 'true' : 'false' }},
            openStaff: {{ request()->routeIs('admin.staff*') || request()->routeIs('admin.staff-type*') || request()->routeIs('admin.contract*') || request()->routeIs('admin.shift*') || request()->routeIs('admin.vacation*') || request()->routeIs('admin.assistance*') ? 'true' : 'false' }},
-           openSchedule: false,
+           openSchedule: {{ request()->routeIs('admin.zone*') ? 'true' : 'false' }},
            openChanges: false,
            openUsers: false
        }"
@@ -123,7 +123,11 @@
                 </svg>
             </button>
             <div x-show="openSchedule" class="ps-8 pe-2 py-1 space-y-1">
-                <a href="#" class="block py-2 px-3 text-xs font-bold rounded-lg text-blue-200 hover:text-white hover:bg-blue-850">
+                <a href="{{ route('admin.zone.index') }}"
+                   class="block py-2 px-3 text-xs font-bold rounded-lg transition {{ request()->routeIs('admin.zone*') ? 'text-emerald-400 bg-blue-900/40' : 'text-blue-200 hover:text-white hover:bg-blue-850' }}">
+                    • Zonas
+                </a>
+                <a href="#" class="block py-2 px-3 text-xs font-bold rounded-lg text-blue-300 hover:text-white hover:bg-blue-850">
                     • Rutas y Horarios
                 </a>
             </div>
