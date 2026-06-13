@@ -13,6 +13,9 @@ class HolidayController extends Controller
     {
         $search = $request->input('search');
         $stateFilter = $request->input('state');
+        $perPage = in_array($request->input('per_page', 10), [10, 25, 50, 100])
+            ? (int) $request->input('per_page', 10)
+            : 10;
 
         $query = Holiday::query();
 
@@ -25,10 +28,10 @@ class HolidayController extends Controller
         }
 
         $holidays = $query->orderBy('date', 'desc')
-                          ->paginate(10)
+                          ->paginate($perPage)
                           ->withQueryString();
 
-        return view('admin.holidays.index', compact('holidays', 'search', 'stateFilter'));
+        return view('admin.holidays.index', compact('holidays', 'search', 'stateFilter', 'perPage'));
     }
 
     public function create()

@@ -74,4 +74,15 @@ class Staff extends Model
 
         return $query->exists();
     }
+
+    public function groupsAsDriver(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(StaffGroup::class, 'driver_id');
+    }
+
+    public function groupsAsHelper(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(StaffGroup::class, 'staff_group_helpers', 'staff_id', 'staff_group_id')
+                    ->withTimestamps();
+    }
 }

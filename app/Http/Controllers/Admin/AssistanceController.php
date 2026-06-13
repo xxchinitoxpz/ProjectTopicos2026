@@ -16,6 +16,9 @@ class AssistanceController extends Controller
         $search = $request->input('search');
         $stateFilter = $request->input('state');
         $dateFilter = $request->input('date');
+        $perPage = in_array($request->input('per_page', 10), [10, 25, 50, 100])
+            ? (int) $request->input('per_page', 10)
+            : 10;
 
         $query = Assistance::query()->with(['staff', 'shift']);
 
@@ -36,10 +39,10 @@ class AssistanceController extends Controller
         }
 
         $assistances = $query->orderBy('date_time', 'desc')
-                             ->paginate(10)
+                             ->paginate($perPage)
                              ->withQueryString();
 
-        return view('admin.assistances.index', compact('assistances', 'search', 'stateFilter', 'dateFilter'));
+        return view('admin.assistances.index', compact('assistances', 'search', 'stateFilter', 'dateFilter', 'perPage'));
     }
 
     public function create()

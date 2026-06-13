@@ -286,7 +286,7 @@
             },
 
             loadRefZones() {
-                fetch('/api/zones-geojson')
+                fetch('{{ route('admin.zones.geojson') }}')
                     .then(r => r.json())
                     .then(data => {
                         L.geoJSON(data, {
@@ -391,12 +391,12 @@
             loadProvinces() {
                 this.provId = ''; this.districts = [];
                 if (!this.deptId) { this.provinces = []; return; }
-                fetch(`/geo/provinces/${this.deptId}`).then(r => r.json()).then(d => { this.provinces = d; });
+                fetch("{{ url('geo/provinces') }}/" + this.deptId).then(r => r.json()).then(d => { this.provinces = d; });
             },
 
             loadDistricts() {
                 if (!this.provId) { this.districts = []; return; }
-                fetch(`/geo/districts/${this.provId}`).then(r => r.json()).then(d => { this.districts = d; });
+                fetch("{{ url('geo/districts') }}/" + this.provId).then(r => r.json()).then(d => { this.districts = d; });
             },
 
             submitForm(e) {

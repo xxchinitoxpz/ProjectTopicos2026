@@ -22,34 +22,40 @@
 
         <!-- Filter & Table Card -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <!-- Search & Filter Area -->
-            <div class="p-6 border-b border-gray-100 bg-gray-50/50">
-                <form action="{{ route('admin.assistance.index') }}" method="GET" class="flex flex-col lg:flex-row gap-4 items-center justify-between">
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 w-full flex-1">
-                        <div class="col-span-1 sm:col-span-2">
-                            <x-text-input type="text" name="search" value="{{ $search }}" placeholder="Buscar por DNI o nombre..." class="w-full text-sm" />
-                        </div>
-                        <div>
-                            <select name="state" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 text-sm">
-                                <option value="">Todos los estados</option>
-                                <option value="presente" {{ $stateFilter === 'presente' ? 'selected' : '' }}>Presente</option>
-                                <option value="ausente" {{ $stateFilter === 'ausente' ? 'selected' : '' }}>Ausente</option>
-                            </select>
-                        </div>
-                        <div>
-                            <x-text-input type="date" name="date" value="{{ $dateFilter }}" class="w-full text-sm" />
-                        </div>
-                    </div>
-                    <div class="flex gap-2 w-full lg:w-auto justify-end mt-4 lg:mt-0 lg:ms-4">
-                        <button type="submit" class="px-4 py-2 bg-usat-blue hover:bg-blue-800 text-white text-sm font-bold rounded-xl transition">
-                            Filtrar
-                        </button>
-                        @if($search || $stateFilter || $dateFilter)
-                            <a href="{{ route('admin.assistance.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-bold rounded-xl transition flex items-center">
-                                Limpiar
-                            </a>
-                        @endif
-                    </div>
+            <!-- Search & Pagination Filter -->
+            <div class="p-6 border-b border-gray-100 bg-gray-50/50 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+                <form action="{{ route('admin.assistance.index') }}" method="GET" class="flex flex-1 flex-col sm:flex-row gap-2">
+                    <input type="hidden" name="per_page" value="{{ $perPage }}">
+                    <x-text-input type="text" name="search" value="{{ $search }}" placeholder="Buscar por DNI o nombre..." class="flex-1 min-w-[200px] text-sm" />
+                    
+                    <select name="state" class="rounded-lg border-gray-300 text-sm py-1.5 focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        <option value="">Todos los estados</option>
+                        <option value="presente" {{ $stateFilter === 'presente' ? 'selected' : '' }}>Presente</option>
+                        <option value="ausente" {{ $stateFilter === 'ausente' ? 'selected' : '' }}>Ausente</option>
+                    </select>
+                    
+                    <x-text-input type="date" name="date" value="{{ $dateFilter }}" class="rounded-lg border-gray-300 text-sm py-1.5 focus:border-emerald-500 focus:ring focus:ring-emerald-200" />
+                    
+                    <button type="submit" class="px-4 py-2 bg-usat-blue hover:bg-blue-800 text-white text-sm font-bold rounded-xl transition">
+                        Filtrar
+                    </button>
+                    @if($search || $stateFilter || $dateFilter)
+                        <a href="{{ route('admin.assistance.index', ['per_page' => $perPage]) }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-bold rounded-xl transition flex items-center justify-center">
+                            Limpiar
+                        </a>
+                    @endif
+                </form>
+                <form action="{{ route('admin.assistance.index') }}" method="GET" class="flex items-center gap-2 text-sm text-gray-500 xl:justify-end">
+                    <input type="hidden" name="search" value="{{ $search }}">
+                    <input type="hidden" name="state" value="{{ $stateFilter }}">
+                    <input type="hidden" name="date" value="{{ $dateFilter }}">
+                    <span>Mostrar</span>
+                    <select name="per_page" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-1.5 focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @foreach([10, 25, 50, 100] as $n)
+                            <option value="{{ $n }}" {{ $perPage == $n ? 'selected' : '' }}>{{ $n }}</option>
+                        @endforeach
+                    </select>
+                    <span>registros</span>
                 </form>
             </div>
 

@@ -172,7 +172,7 @@
                     modelSelect.disabled = true;
                     modelSelect.innerHTML = '<option value="">Cargando modelos...</option>';
 
-                    fetch(`/vehicles/brand-models-by-brand/${brandId}`)
+                    fetch("{{ url('vehicles/brand-models-by-brand') }}/" + brandId)
                         .then(response => response.json())
                         .then(data => {
                             let options = '<option value="">-- Seleccionar Modelo --</option>';

@@ -11,7 +11,11 @@ class StaffTypeController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $search  = $request->input('search');
+        $perPage = in_array($request->input('per_page', 10), [10, 25, 50, 100])
+            ? (int) $request->input('per_page', 10)
+            : 10;
+
         $query = StaffType::query();
 
         if ($search) {
@@ -19,9 +23,9 @@ class StaffTypeController extends Controller
                   ->orWhere('description', 'like', '%' . $search . '%');
         }
 
-        $types = $query->orderBy('name')->paginate(10)->withQueryString();
+        $types = $query->orderBy('name')->paginate($perPage)->withQueryString();
 
-        return view('admin.staff-types.index', compact('types', 'search'));
+        return view('admin.staff-types.index', compact('types', 'search', 'perPage'));
     }
 
     public function create()

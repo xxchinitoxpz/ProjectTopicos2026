@@ -14,6 +14,9 @@ class ContractController extends Controller
     {
         $search = $request->input('search');
         $typeFilter = $request->input('contract_type');
+        $perPage = in_array($request->input('per_page', 10), [10, 25, 50, 100])
+            ? (int) $request->input('per_page', 10)
+            : 10;
         
         $query = Contract::query()->with('staff');
 
@@ -31,9 +34,9 @@ class ContractController extends Controller
             $query->where('contract_type', $typeFilter);
         }
 
-        $contracts = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+        $contracts = $query->orderBy('created_at', 'desc')->paginate($perPage)->withQueryString();
 
-        return view('admin.contracts.index', compact('contracts', 'search', 'typeFilter'));
+        return view('admin.contracts.index', compact('contracts', 'search', 'typeFilter', 'perPage'));
     }
 
     public function create()

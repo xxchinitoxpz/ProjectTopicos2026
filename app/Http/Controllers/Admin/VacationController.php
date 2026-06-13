@@ -13,6 +13,9 @@ class VacationController extends Controller
     {
         $search = $request->input('search');
         $stateFilter = $request->input('state');
+        $perPage = in_array($request->input('per_page', 10), [10, 25, 50, 100])
+            ? (int) $request->input('per_page', 10)
+            : 10;
 
         $query = Vacation::query()->with('staff');
 
@@ -30,9 +33,9 @@ class VacationController extends Controller
             $query->where('state', $stateFilter);
         }
 
-        $vacations = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+        $vacations = $query->orderBy('created_at', 'desc')->paginate($perPage)->withQueryString();
 
-        return view('admin.vacations.index', compact('vacations', 'search', 'stateFilter'));
+        return view('admin.vacations.index', compact('vacations', 'search', 'stateFilter', 'perPage'));
     }
 
     public function create()

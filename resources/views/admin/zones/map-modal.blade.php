@@ -122,6 +122,12 @@
             maxZoom: 19
         }).addTo(map);
 
+        if (window.ResizeObserver) {
+            new ResizeObserver(() => {
+                map.invalidateSize();
+            }).observe(mapEl);
+        }
+
         if (coords.length >= 3) {
             const polygon = L.polygon(coords, {
                 color: '#10b981',

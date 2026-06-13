@@ -18,7 +18,11 @@ class VehicleController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $search  = $request->input('search');
+        $perPage = in_array($request->input('per_page', 10), [10, 25, 50, 100])
+            ? (int) $request->input('per_page', 10)
+            : 10;
+
         $query = Vehicle::query()->with(['brand', 'brandModel', 'vehicleType', 'vehicleColor', 'vehicleImages']);
 
         if ($search) {
@@ -33,9 +37,9 @@ class VehicleController extends Controller
             });
         }
 
-        $vehicles = $query->orderBy('name')->paginate(10)->withQueryString();
+        $vehicles = $query->orderBy('name')->paginate($perPage)->withQueryString();
 
-        return view('admin.vehicles.index', compact('vehicles', 'search'));
+        return view('admin.vehicles.index', compact('vehicles', 'search', 'perPage'));
     }
 
     public function create()

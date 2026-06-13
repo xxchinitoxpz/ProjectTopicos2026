@@ -3,7 +3,7 @@
        x-data="{ 
            openVehicles: {{ request()->routeIs('admin.vehicle*') || request()->routeIs('admin.brand*') ? 'true' : 'false' }},
            openStaff: {{ request()->routeIs('admin.staff*') || request()->routeIs('admin.staff-type*') || request()->routeIs('admin.contract*') || request()->routeIs('admin.shift*') || request()->routeIs('admin.vacation*') || request()->routeIs('admin.assistance*') || request()->routeIs('admin.holiday*') ? 'true' : 'false' }},
-           openSchedule: {{ request()->routeIs('admin.zone*') ? 'true' : 'false' }},
+           openSchedule: {{ request()->routeIs('admin.zone*') || request()->routeIs('admin.staff-group*') || request()->routeIs('admin.planning*') ? 'true' : 'false' }},
            openChanges: false,
            openUsers: false
        }"
@@ -129,6 +129,14 @@
                 <a href="{{ route('admin.zone.index') }}"
                    class="block py-2 px-3 text-xs font-bold rounded-lg transition {{ request()->routeIs('admin.zone*') ? 'text-emerald-400 bg-blue-900/40' : 'text-blue-200 hover:text-white hover:bg-blue-850' }}">
                     • Zonas
+                </a>
+                <a href="{{ route('admin.staff-group.index') }}"
+                   class="block py-2 px-3 text-xs font-bold rounded-lg transition {{ request()->routeIs('admin.staff-group*') ? 'text-emerald-400 bg-blue-900/40' : 'text-blue-200 hover:text-white hover:bg-blue-850' }}">
+                    • Grupos de Personal
+                </a>
+                <a href="{{ route('admin.planning.index') }}"
+                   class="block py-2 px-3 text-xs font-bold rounded-lg transition {{ request()->routeIs('admin.planning*') ? 'text-emerald-400 bg-blue-900/40' : 'text-blue-200 hover:text-white hover:bg-blue-850' }}">
+                    • Programación de Grupos
                 </a>
                 <a href="#" class="block py-2 px-3 text-xs font-bold rounded-lg text-blue-300 hover:text-white hover:bg-blue-850">
                     • Rutas y Horarios

@@ -22,28 +22,38 @@
 
         <!-- Filter & Table Card -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <!-- Search & Filter Area -->
-            <div class="p-6 border-b border-gray-100 bg-gray-50/50">
-                <form action="{{ route('admin.contract.index') }}" method="GET" class="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                    <div class="flex flex-1 w-full gap-2">
-                        <x-text-input type="text" name="search" value="{{ $search }}" placeholder="Buscar por DNI o nombre del personal..." class="w-full text-sm max-w-md" />
-                        
-                        <select name="contract_type" class="rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 text-sm">
-                            <option value="">Todos los tipos</option>
-                            <option value="permanente" {{ $typeFilter === 'permanente' ? 'selected' : '' }}>Permanente</option>
-                            <option value="nombrado" {{ $typeFilter === 'nombrado' ? 'selected' : '' }}>Nombrado</option>
-                            <option value="temporal" {{ $typeFilter === 'temporal' ? 'selected' : '' }}>Temporal</option>
-                        </select>
-                        
-                        <button type="submit" class="px-4 py-2 bg-usat-blue hover:bg-blue-800 text-white text-sm font-bold rounded-xl transition">
-                            Filtrar
-                        </button>
-                        @if($search || $typeFilter)
-                            <a href="{{ route('admin.contract.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-bold rounded-xl transition flex items-center">
-                                Limpiar
-                            </a>
-                        @endif
-                    </div>
+            <!-- Search & Pagination Filter -->
+            <div class="p-6 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <form action="{{ route('admin.contract.index') }}" method="GET" class="flex flex-1 gap-2">
+                    <input type="hidden" name="per_page" value="{{ $perPage }}">
+                    <x-text-input type="text" name="search" value="{{ $search }}" placeholder="Buscar por DNI o nombre del personal..." class="flex-1 text-sm" />
+                    
+                    <select name="contract_type" class="rounded-lg border-gray-300 text-sm py-1.5 focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        <option value="">Todos los tipos</option>
+                        <option value="permanente" {{ $typeFilter === 'permanente' ? 'selected' : '' }}>Permanente</option>
+                        <option value="nombrado" {{ $typeFilter === 'nombrado' ? 'selected' : '' }}>Nombrado</option>
+                        <option value="temporal" {{ $typeFilter === 'temporal' ? 'selected' : '' }}>Temporal</option>
+                    </select>
+                    
+                    <button type="submit" class="px-4 py-2 bg-usat-blue hover:bg-blue-800 text-white text-sm font-bold rounded-xl transition">
+                        Filtrar
+                    </button>
+                    @if($search || $typeFilter)
+                        <a href="{{ route('admin.contract.index', ['per_page' => $perPage]) }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-bold rounded-xl transition flex items-center">
+                            Limpiar
+                        </a>
+                    @endif
+                </form>
+                <form action="{{ route('admin.contract.index') }}" method="GET" class="flex items-center gap-2 text-sm text-gray-500">
+                    <input type="hidden" name="search" value="{{ $search }}">
+                    <input type="hidden" name="contract_type" value="{{ $typeFilter }}">
+                    <span>Mostrar</span>
+                    <select name="per_page" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-1.5 focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @foreach([10, 25, 50, 100] as $n)
+                            <option value="{{ $n }}" {{ $perPage == $n ? 'selected' : '' }}>{{ $n }}</option>
+                        @endforeach
+                    </select>
+                    <span>registros</span>
                 </form>
             </div>
 

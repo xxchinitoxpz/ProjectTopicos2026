@@ -15,6 +15,8 @@ use App\Http\Controllers\Admin\VacationController;
 use App\Http\Controllers\Admin\AssistanceController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\Admin\HolidayController;
+use App\Http\Controllers\Admin\StaffGroupController;
+use App\Http\Controllers\Admin\PlanningController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -59,6 +61,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('zones-map', [ZoneController::class, 'allZonesMap'])->name('admin.zone.all-map');
     Route::get('zones/{zone}/map', [ZoneController::class, 'showMap'])->name('admin.zone.show-map');
     Route::resource('zones', ZoneController::class)->names('admin.zone')->except(['show']);
+
+    Route::resource('staff-groups', StaffGroupController::class)->names('admin.staff-group')->except(['show']);
+
+    // Plannings
+    Route::post('plannings/validate', [PlanningController::class, 'validateAvailability'])->name('admin.planning.validate');
+    Route::post('plannings/bulk', [PlanningController::class, 'bulkStore'])->name('admin.planning.bulk');
+    Route::patch('plannings/{planning}/finish', [PlanningController::class, 'finish'])->name('admin.planning.finish');
+    Route::get('plannings/{planning}/history', [PlanningController::class, 'history'])->name('admin.planning.history');
+    Route::resource('plannings', PlanningController::class)->names('admin.planning')->except(['show']);
 
     // Geo API (cascading selects)
     Route::get('geo/provinces/{department}', [ZoneController::class, 'provincesByDepartment'])->name('admin.geo.provinces');

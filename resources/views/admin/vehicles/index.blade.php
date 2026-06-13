@@ -23,17 +23,28 @@
         <!-- Filter & Table Card -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <!-- Search Filter -->
-            <div class="p-6 border-b border-gray-100 bg-gray-50/50">
-                <form action="{{ route('admin.vehicle.index') }}" method="GET" class="flex max-w-md gap-2">
-                    <x-text-input type="text" name="search" value="{{ $search }}" placeholder="Buscar por placa, nombre, marca, color..." class="w-full text-sm" />
+            <div class="p-6 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <form action="{{ route('admin.vehicle.index') }}" method="GET" class="flex flex-1 gap-2">
+                    <input type="hidden" name="per_page" value="{{ $perPage }}">
+                    <x-text-input type="text" name="search" value="{{ $search }}" placeholder="Buscar por placa, nombre, marca, color..." class="flex-1 text-sm" />
                     <button type="submit" class="px-4 py-2 bg-usat-blue hover:bg-blue-800 text-white text-sm font-bold rounded-xl transition">
                         Buscar
                     </button>
                     @if($search)
-                        <a href="{{ route('admin.vehicle.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-bold rounded-xl transition flex items-center">
+                        <a href="{{ route('admin.vehicle.index', ['per_page' => $perPage]) }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-bold rounded-xl transition flex items-center">
                             Limpiar
                         </a>
                     @endif
+                </form>
+                <form action="{{ route('admin.vehicle.index') }}" method="GET" class="flex items-center gap-2 text-sm text-gray-500">
+                    <input type="hidden" name="search" value="{{ $search }}">
+                    <span>Mostrar</span>
+                    <select name="per_page" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-1.5 focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @foreach([10, 25, 50, 100] as $n)
+                            <option value="{{ $n }}" {{ $perPage == $n ? 'selected' : '' }}>{{ $n }}</option>
+                        @endforeach
+                    </select>
+                    <span>registros</span>
                 </form>
             </div>
 
