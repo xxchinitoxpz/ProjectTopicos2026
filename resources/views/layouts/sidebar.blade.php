@@ -2,7 +2,7 @@
 <aside :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}" 
        x-data="{ 
            openVehicles: {{ request()->routeIs('admin.vehicle*') || request()->routeIs('admin.brand*') ? 'true' : 'false' }},
-           openStaff: {{ request()->routeIs('admin.staff*') || request()->routeIs('admin.staff-type*') || request()->routeIs('admin.contract*') || request()->routeIs('admin.shift*') || request()->routeIs('admin.vacation*') || request()->routeIs('admin.assistance*') ? 'true' : 'false' }},
+           openStaff: {{ request()->routeIs('admin.staff*') || request()->routeIs('admin.staff-type*') || request()->routeIs('admin.contract*') || request()->routeIs('admin.shift*') || request()->routeIs('admin.vacation*') || request()->routeIs('admin.assistance*') || request()->routeIs('admin.holiday*') ? 'true' : 'false' }},
            openSchedule: {{ request()->routeIs('admin.zone*') ? 'true' : 'false' }},
            openChanges: false,
            openUsers: false
@@ -104,6 +104,9 @@
                 </a>
                 <a href="{{ route('admin.assistance.index') }}" class="block py-2 px-3 text-xs font-bold rounded-lg transition {{ request()->routeIs('admin.assistance.*') ? 'text-emerald-400 bg-blue-900/40' : 'text-blue-200 hover:text-white hover:bg-blue-850' }}">
                     • Asistencias
+                </a>
+                <a href="{{ route('admin.holiday.index') }}" class="block py-2 px-3 text-xs font-bold rounded-lg transition {{ request()->routeIs('admin.holiday.*') ? 'text-emerald-400 bg-blue-900/40' : 'text-blue-200 hover:text-white hover:bg-blue-850' }}">
+                    • Feriados
                 </a>
             </div>
         </div>

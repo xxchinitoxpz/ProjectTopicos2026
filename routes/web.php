@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ShiftController;
 use App\Http\Controllers\Admin\VacationController;
 use App\Http\Controllers\Admin\AssistanceController;
 use App\Http\Controllers\Admin\ZoneController;
+use App\Http\Controllers\Admin\HolidayController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -63,6 +64,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('geo/provinces/{department}', [ZoneController::class, 'provincesByDepartment'])->name('admin.geo.provinces');
     Route::get('geo/districts/{province}', [ZoneController::class, 'districtsByProvince'])->name('admin.geo.districts');
     Route::get('api/zones-geojson', [ZoneController::class, 'zonesGeoJson'])->name('admin.zones.geojson');
+
+    Route::resource('holidays', HolidayController::class)->names('admin.holiday')->except(['show']);
 });
 
 require __DIR__.'/auth.php';
