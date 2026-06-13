@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\ShiftController;
 use App\Http\Controllers\Admin\VacationController;
 use App\Http\Controllers\Admin\AssistanceController;
+use App\Http\Controllers\Admin\HolidayController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -52,6 +53,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('vacations/{vacation}/reject', [VacationController::class, 'reject'])->name('admin.vacation.reject');
 
     Route::resource('assistances', AssistanceController::class)->names('admin.assistance')->except(['show']);
+    Route::resource('holidays', HolidayController::class)->names('admin.holiday')->except(['show']);
 });
 
 require __DIR__.'/auth.php';
