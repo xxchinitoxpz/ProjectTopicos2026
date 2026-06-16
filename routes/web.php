@@ -65,6 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('staff-groups', StaffGroupController::class)->names('admin.staff-group')->except(['show']);
 
     // Plannings
+    Route::get('plannings/get-holidays', [PlanningController::class, 'getHolidays'])->name('admin.planning.get-holidays');
     Route::post('plannings/validate', [PlanningController::class, 'validateAvailability'])->name('admin.planning.validate');
     Route::post('plannings/bulk', [PlanningController::class, 'bulkStore'])->name('admin.planning.bulk');
     Route::patch('plannings/{planning}/finish', [PlanningController::class, 'finish'])->name('admin.planning.finish');

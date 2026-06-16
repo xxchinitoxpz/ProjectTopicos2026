@@ -1,16 +1,146 @@
 <x-app-layout>
     <x-slot:title>
-        Editar Programación
+        Modificar Programación
     </x-slot:title>
 
     <turbo-frame id="modal" data-modal-size="max-w-4xl">
         <div data-modal-size="max-w-4xl" class="max-w-4xl mx-auto space-y-6 p-6 sm:p-8" 
-             x-data="planningForm({{ $groups->toJson() }}, {{ $planning->toJson() }}, [{{ $planning->helpers->pluck('id')->join(', ') }}])">
+             x-data="{
+                activeTab: 'turno',
+                pendingChanges: [],
+                
+                // Form inputs
+                newShiftId: '',
+                newVehicleId: '',
+                replacePerson: '', 
+                newPersonId: '',
+                motiveType: 'Imprevistos',
+                motiveDetails: '',
+
+                // Current values
+                currentShiftId: '{{ $planning->shift_id }}',
+                currentShiftName: '{{ $planning->shift?->name }}',
+                currentVehicleId: '{{ $planning->vehicle_id }}',
+                currentVehiclePlate: '{{ $planning->vehicle?->plate }}',
+                currentDriverId: '{{ $planning->driver_id }}',
+                currentDriverName: '{{ $planning->driver?->name }} {{ $planning->driver?->last_name }}',
+                currentHelpers: [
+                    @foreach($planning->helpers as $helper)
+                        { id: '{{ $helper->id }}', name: '{{ $helper->name }} {{ $helper->last_name }}' },
+                    @endforeach
+                ],
+
+                addChange() {
+                    let type = '';
+                    let newId = '';
+                    let oldId = '';
+                    let newName = '';
+                    let oldName = '';
+
+                    if (this.activeTab === 'turno') {
+                        if (!this.newShiftId) {
+                            alert('Seleccione un nuevo turno.');
+                            return;
+                        }
+                        if (this.newShiftId == this.currentShiftId) {
+                            alert('El turno seleccionado es el mismo que el actual.');
+                            return;
+                        }
+                        type = 'turno';
+                        newId = this.newShiftId;
+                        oldId = this.currentShiftId;
+                        oldName = this.currentShiftName;
+                        
+                        const selectEl = document.getElementById('new_shift_id');
+                        newName = selectEl.options[selectEl.selectedIndex].text;
+
+                    } else if (this.activeTab === 'vehiculo') {
+                        if (!this.newVehicleId) {
+                            alert('Seleccione un nuevo vehículo.');
+                            return;
+                        }
+                        if (this.newVehicleId == this.currentVehicleId) {
+                            alert('El vehículo seleccionado es el mismo que el actual.');
+                            return;
+                        }
+                        type = 'vehiculo';
+                        newId = this.newVehicleId;
+                        oldId = this.currentVehicleId;
+                        oldName = 'Vehículo ' + this.currentVehiclePlate;
+
+                        const selectEl = document.getElementById('new_vehicle_id');
+                        newName = selectEl.options[selectEl.selectedIndex].text;
+
+                    } else if (this.activeTab === 'personal') {
+                        if (!this.replacePerson) {
+                            alert('Seleccione el personal actual a reemplazar.');
+                            return;
+                        }
+                        if (!this.newPersonId) {
+                            alert('Seleccione el nuevo empleado disponible.');
+                            return;
+                        }
+
+                        if (this.replacePerson === 'conductor') {
+                            if (this.newPersonId == this.currentDriverId) {
+                                alert('El conductor seleccionado es el mismo que el actual.');
+                                return;
+                            }
+                            type = 'conductor';
+                            newId = this.newPersonId;
+                            oldId = this.currentDriverId;
+                            oldName = this.currentDriverName;
+                        } else {
+                            if (this.newPersonId == this.replacePerson) {
+                                alert('El ayudante seleccionado es el mismo que el actual.');
+                                return;
+                            }
+                            type = 'helper';
+                            newId = this.newPersonId;
+                            oldId = this.replacePerson;
+                            const h = this.currentHelpers.find(ch => ch.id == this.replacePerson);
+                            oldName = h ? h.name : 'Ayudante';
+                        }
+
+                        const selectEl = document.getElementById('new_person_id');
+                        newName = selectEl.options[selectEl.selectedIndex].text;
+                    }
+
+                    if (!this.motiveDetails) {
+                        alert('Debe describir el motivo del cambio.');
+                        return;
+                    }
+
+                    // Check if duplicate change exists
+                    this.pendingChanges = this.pendingChanges.filter(c => !(c.type === type && c.old_id == oldId));
+
+                    this.pendingChanges.push({
+                        type: type,
+                        new_id: newId,
+                        old_id: oldId,
+                        new_name: newName,
+                        old_name: oldName,
+                        reason_type: this.motiveType,
+                        details: this.motiveDetails
+                    });
+
+                    // Clear inputs
+                    this.newShiftId = '';
+                    this.newVehicleId = '';
+                    this.replacePerson = '';
+                    this.newPersonId = '';
+                    this.motiveDetails = '';
+                },
+
+                removeChange(index) {
+                    this.pendingChanges.splice(index, 1);
+                }
+             }">
             <!-- Header -->
             <div class="flex items-center justify-between pb-4 border-b border-gray-100">
                 <div>
-                    <h3 class="text-lg font-bold text-usat-blue">Editar Programación</h3>
-                    <p class="text-xs text-gray-400">Modifica los detalles y asignaciones de la programación activa.</p>
+                    <h3 class="text-lg font-bold text-usat-blue">Modificar Programación</h3>
+                    <p class="text-xs text-gray-400">Actualiza la programación de un día específico. Se puede cambiar el turno, el vehículo o el personal.</p>
                 </div>
                 <button type="button" @click="typeof closeModal === 'function' ? closeModal() : window.location.href='{{ route('admin.planning.index') }}'" class="text-gray-400 hover:text-gray-500 transition focus:outline-none">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -19,259 +149,211 @@
                 </button>
             </div>
 
-            <!-- Form -->
-            <form action="{{ route('admin.planning.update', $planning->id) }}" method="POST" class="space-y-6">
-                @csrf
-                @method('PUT')
+            <!-- Tab Selectors -->
+            <div class="flex border-b border-gray-200">
+                <button type="button" 
+                        @click="activeTab = 'turno'"
+                        :class="activeTab === 'turno' ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                        class="flex-1 py-3 text-center border-b-2 font-medium text-xs sm:text-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Cambio de Turno
+                </button>
+                <button type="button" 
+                        @click="activeTab = 'vehiculo'"
+                        :class="activeTab === 'vehiculo' ? 'border-amber-500 text-amber-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                        class="flex-1 py-3 text-center border-b-2 font-medium text-xs sm:text-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10M21 16V10a2 2 0 00-2-2h-3V6a1 1 0 00-1-1H13v11"></path>
+                    </svg>
+                    Cambio de Vehículo
+                </button>
+                <button type="button" 
+                        @click="activeTab = 'personal'"
+                        :class="activeTab === 'personal' ? 'border-emerald-600 text-emerald-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                        class="flex-1 py-3 text-center border-b-2 font-medium text-xs sm:text-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    Cambio de Personal
+                </button>
+            </div>
 
-                <!-- Two Column Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Column Left: Dates, Group and Driver selection -->
-                    <div class="space-y-5">
-                        <!-- Dates Row -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <x-input-label for="date_start" :value="__('Fecha de inicio *')" />
-                                <x-text-input id="date_start" name="date_start" type="date" x-model="dateStart" @change="onFieldChange()" class="block mt-1 w-full text-sm" required />
-                                <x-input-error :messages="$errors->get('date_start')" class="mt-1" />
-                            </div>
-                            <div>
-                                <x-input-label for="date_end" :value="__('Fecha de fin *')" />
-                                <x-text-input id="date_end" name="date_end" type="date" x-model="dateEnd" @change="onFieldChange()" class="block mt-1 w-full text-sm" required />
-                                <x-input-error :messages="$errors->get('date_end')" class="mt-1" />
-                            </div>
-                        </div>
-
-                        <!-- Validate Button Row -->
+            <!-- Main Tab Fields Content -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 p-4 sm:p-6 rounded-2xl border border-gray-150">
+                <!-- Left: Form inputs for active tab -->
+                <div class="space-y-4">
+                    <!-- Cambio de Turno Fields -->
+                    <div x-show="activeTab === 'turno'" class="space-y-4">
                         <div>
-                            <button type="button" @click="validateAvailability()" :disabled="isValidating"
-                                    class="w-full flex items-center justify-center px-4 py-2.5 bg-blue-50 border border-blue-200 text-usat-blue hover:bg-blue-100 disabled:opacity-50 text-sm font-bold rounded-xl transition">
-                                <svg x-show="isValidating" class="animate-spin -ml-1 mr-3 h-5 w-5 text-usat-blue" fill="none" viewBox="0 0 24 24" style="display: none;">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                <svg x-show="!isValidating" class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Validar disponibilidad
-                            </button>
+                            <x-input-label :value="__('Turno Actual')" />
+                            <input type="text" readonly :value="currentShiftName" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:outline-none text-xs font-semibold py-2">
                         </div>
-
-                        <!-- Staff Group View (Non changeable group in edit mode to preserve integrity) -->
                         <div>
-                            <x-input-label :value="__('Grupo de Personal')" />
-                            <div class="mt-1 p-2.5 bg-gray-100 rounded-lg text-sm text-gray-700 font-semibold border border-gray-200">
-                                {{ $planning->staffGroup?->name ?? 'Grupo Eliminado' }}
-                            </div>
-                        </div>
-
-                        <!-- Driver Select (Conductor) -->
-                        <div>
-                            <x-input-label for="driver_id" :value="__('Conductor Principal *')" />
-                            <select id="driver_id" name="driver_id" x-model="driverId" @change="onFieldChange()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 text-sm" required>
-                                <option value="">Seleccione conductor...</option>
-                                @foreach($drivers as $driver)
-                                    <option value="{{ $driver->id }}">{{ $driver->name }} {{ $driver->last_name }}</option>
+                            <x-input-label for="new_shift_id" :value="__('Nuevo Turno *')" />
+                            <select id="new_shift_id" x-model="newShiftId" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-xs">
+                                <option value="">Seleccione un nuevo turno...</option>
+                                @foreach($shifts as $shift)
+                                    <option value="{{ $shift->id }}">{{ $shift->name }}</option>
                                 @endforeach
                             </select>
-                            <x-input-error :messages="$errors->get('driver_id')" class="mt-1" />
                         </div>
+                    </div>
 
-                        <!-- Days Checklist -->
+                    <!-- Cambio de Vehiculo Fields -->
+                    <div x-show="activeTab === 'vehiculo'" class="space-y-4">
                         <div>
-                            <x-input-label :value="__('Días de Trabajo *')" />
-                            <div class="grid grid-cols-2 gap-2 mt-1 bg-gray-55 p-3 rounded-xl border border-gray-200">
-                                @foreach(['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'] as $day)
-                                    <label class="flex items-center text-xs font-semibold text-gray-700 capitalize cursor-pointer select-none">
-                                        <input type="checkbox" name="days[]" value="{{ $day }}" x-model="days" @change="onFieldChange()"
-                                               class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 me-2">
-                                        {{ $day }}
-                                    </label>
+                            <x-input-label :value="__('Vehículo Actual')" />
+                            <input type="text" readonly :value="'Vehículo ' + currentVehiclePlate" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:outline-none text-xs font-semibold py-2">
+                        </div>
+                        <div>
+                            <x-input-label for="new_vehicle_id" :value="__('Nuevo Vehículo *')" />
+                            <select id="new_vehicle_id" x-model="newVehicleId" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring focus:ring-amber-200 focus:ring-opacity-50 text-xs">
+                                <option value="">Seleccione un nuevo vehículo...</option>
+                                @foreach($vehicles as $veh)
+                                    <option value="{{ $veh->id }}">Vehículo {{ $veh->plate }}</option>
                                 @endforeach
-                            </div>
-                            <x-input-error :messages="$errors->get('days')" class="mt-1" />
+                            </select>
                         </div>
                     </div>
 
-                    <!-- Column Right: Helpers Checklist -->
-                    <div class="space-y-4">
+                    <!-- Cambio de Personal Fields -->
+                    <div x-show="activeTab === 'personal'" class="space-y-4">
                         <div>
-                            <div class="flex items-center justify-between">
-                                <x-input-label :value="__('Ayudantes del Grupo')" />
-                                <span class="text-[10px] text-gray-450 font-bold" x-text="helpers.length + ' seleccionado(s)'"></span>
-                            </div>
-                            <div class="border border-gray-200 rounded-xl p-3 bg-gray-50/50 max-h-96 overflow-y-auto space-y-2 mt-1">
-                                @forelse($helpers as $helper)
-                                    <label class="flex items-center p-2 hover:bg-white rounded-lg transition cursor-pointer select-none">
-                                        <input type="checkbox" name="helpers[]" value="{{ $helper->id }}" x-model="helpers" @change="onFieldChange()"
-                                               class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 me-3">
-                                        <div>
-                                            <div class="text-sm font-semibold text-gray-800">{{ $helper->name }} {{ $helper->last_name }}</div>
-                                            <div class="text-[10px] text-gray-400">Cargo: {{ $helper->staffType?->name }} | DNI: {{ $helper->dni }}</div>
-                                        </div>
-                                    </label>
-                                @empty
-                                    <div class="text-center py-6 text-gray-400 text-sm">
-                                        No hay ayudantes activos registrados.
-                                    </div>
-                                @endforelse
-                            </div>
-                            <x-input-error :messages="$errors->get('helpers')" class="mt-1" />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Alert Banners based on Availability Check -->
-                <div class="space-y-3">
-                    <!-- Failure alert: Inconsistencias -->
-                    <div x-show="isValidated && !isValid" style="display: none;" 
-                         class="p-4 bg-red-50 border border-red-200 rounded-xl shadow-sm text-red-800 space-y-3">
-                        <div class="flex items-start">
-                            <svg class="w-5 h-5 text-red-500 me-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                            </svg>
-                            <div>
-                                <h4 class="text-sm font-bold text-red-900">Hay errores que corregir</h4>
-                                <ul class="list-disc list-inside text-xs mt-1 space-y-1">
-                                    <template x-for="err in errors" :key="err">
-                                        <li x-text="err"></li>
-                                    </template>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <!-- Suggestions -->
-                        <div x-show="suggestions.length > 0" class="pt-3 border-t border-red-200">
-                            <h5 class="text-xs font-bold text-red-900 flex items-center mb-2">
-                                <svg class="w-4 h-4 me-1.5 text-red-650" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                </svg>
-                                Sugerencias de Reemplazo:
-                            </h5>
-                            <div class="space-y-1.5 max-h-36 overflow-y-auto">
-                                <template x-for="sug in suggestions" :key="sug.suggested_staff_id">
-                                    <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-red-100 text-xs shadow-xs">
-                                        <div>
-                                            Reemplazar a <strong x-text="sug.conflicting_staff_name"></strong> con <strong class="text-emerald-700" x-text="sug.suggested_staff_name"></strong>
-                                        </div>
-                                        <button type="button" @click="applySuggestion(sug)"
-                                                class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-bold rounded-lg transition duration-150">
-                                            Reemplazar
-                                        </button>
-                                    </div>
+                            <x-input-label for="replace_person" :value="__('Personal Actual *')" />
+                            <select id="replace_person" x-model="replacePerson" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 text-xs">
+                                <option value="">Seleccione el personal a reemplazar...</option>
+                                <option value="conductor" x-text="'Conductor: ' + currentDriverName"></option>
+                                <template x-for="h in currentHelpers" :key="h.id">
+                                    <option :value="h.id" x-text="'Ayudante: ' + h.name"></option>
                                 </template>
-                            </div>
+                            </select>
                         </div>
-                    </div>
-
-                    <!-- Success alert: Listo para guardar -->
-                    <div x-show="isValidated && isValid" style="display: none;" 
-                         class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm text-emerald-800 flex items-center justify-between">
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-emerald-500 me-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span class="text-sm font-semibold" x-text="successMessage"></span>
+                        <div>
+                            <x-input-label for="new_person_id" :value="__('Nuevo Personal *')" />
+                            <select id="new_person_id" x-model="newPersonId" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 text-xs">
+                                <option value="">Buscar empleado disponible...</option>
+                                @foreach($allStaff as $st)
+                                    <option value="{{ $st->id }}">{{ $st->name }} {{ $st->last_name }} ({{ $st->staffType?->name }})</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                <!-- Right: Motive fields -->
+                <div class="space-y-4">
+                    <div>
+                        <x-input-label for="motive_type" :value="__('Motivo Predefinido')" />
+                        <select id="motive_type" x-model="motiveType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-opacity-50 text-xs">
+                            <option value="Imprevistos">Imprevistos</option>
+                            <option value="Falla Mecánica">Falla Mecánica</option>
+                            <option value="Inasistencia">Inasistencia</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Obras en la vía">Obras en la vía</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <x-input-label for="motive_details" :value="__('Motivo del Cambio *')" />
+                        <textarea id="motive_details" x-model="motiveDetails" placeholder="Ingrese el motivo detallado de esta modificación..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-opacity-50 text-xs h-20 py-2 resize-none"></textarea>
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="button" @click="addChange()" 
+                                :class="{
+                                    'bg-blue-600 hover:bg-blue-700': activeTab === 'turno',
+                                    'bg-amber-500 hover:bg-amber-600': activeTab === 'vehiculo',
+                                    'bg-emerald-600 hover:bg-emerald-700': activeTab === 'personal'
+                                }"
+                                class="w-full text-white text-xs font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center">
+                            <svg class="w-4 h-4 me-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Agregar cambio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- registered changes table section -->
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold text-gray-800 flex items-center">
+                    <svg class="w-4 h-4 me-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    Cambios Registrados
+                </h4>
+                <div class="border border-gray-150 rounded-xl overflow-hidden bg-white shadow-xs">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-150 text-gray-400 font-bold uppercase bg-gray-50/70 text-[10px]">
+                                <th class="py-2.5 px-4">Tipo de Cambio</th>
+                                <th class="py-2.5 px-4">Valor Anterior</th>
+                                <th class="py-2.5 px-4">Valor Nuevo</th>
+                                <th class="py-2.5 px-4">Motivo</th>
+                                <th class="py-2.5 px-4">Descripción</th>
+                                <th class="py-2.5 px-4 text-center" width="80">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-gray-700 text-[11px]">
+                            <!-- No changes placeholder -->
+                            <template x-if="pendingChanges.length === 0">
+                                <tr>
+                                    <td colspan="6" class="py-6 text-center text-gray-400 italic">
+                                        No hay cambios registrados. Agregue cambios usando los botones superiores.
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <template x-for="(c, idx) in pendingChanges" :key="idx">
+                                <tr class="hover:bg-gray-50/30 transition">
+                                    <td class="py-2.5 px-4">
+                                        <span class="px-2 py-0.5 text-[9px] font-bold rounded capitalize"
+                                              :class="{
+                                                  'bg-blue-50 text-blue-700 border border-blue-100': c.type === 'turno',
+                                                  'bg-amber-50 text-amber-700 border border-amber-100': c.type === 'vehiculo',
+                                                  'bg-emerald-50 text-emerald-700 border border-emerald-100': c.type === 'conductor' || c.type === 'helper'
+                                              }"
+                                              x-text="c.type">
+                                        </span>
+                                    </td>
+                                    <td class="py-2.5 px-4 font-semibold text-gray-800" x-text="c.old_name"></td>
+                                    <td class="py-2.5 px-4 font-semibold text-gray-900" x-text="c.new_name"></td>
+                                    <td class="py-2.5 px-4 text-gray-650" x-text="c.reason_type"></td>
+                                    <td class="py-2.5 px-4 text-gray-650" x-text="c.details"></td>
+                                    <td class="py-2.5 px-4 text-center">
+                                        <button type="button" @click="removeChange(idx)" class="text-red-500 hover:text-red-700 font-bold px-2 py-1 hover:bg-red-50 rounded-lg transition" title="Deshacer cambio">
+                                            Deshacer
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Form Save Trigger -->
+            <form action="{{ route('admin.planning.update', $planning->id) }}" method="POST" class="pt-4 border-t border-gray-100">
+                @csrf
+                @method('PUT')
+                
+                <input type="hidden" name="changes" :value="JSON.stringify(pendingChanges)">
+
+                <div class="flex items-center justify-end gap-3">
                     <button type="button" @click="typeof closeModal === 'function' ? closeModal() : window.location.href='{{ route('admin.planning.index') }}'" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold rounded-xl transition">
                         Cancelar
                     </button>
-                    <button type="submit" :disabled="!isValidated || !isValid" 
+                    <button type="submit" :disabled="pendingChanges.length === 0" 
                             class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-bold rounded-xl transition shadow-lg shadow-emerald-600/10 disabled:opacity-50 disabled:cursor-not-allowed">
-                        Actualizar Programación
+                        Guardar Cambios
                     </button>
                 </div>
             </form>
-
-            <!-- Alpine.js dynamic script inside turbo-frame -->
-            <script>
-                window.planningForm = function(groupsJson, planningJson, helpersArray) {
-                    return {
-                        groups: groupsJson,
-                        planningId: planningJson.id,
-                        staffGroupId: planningJson.staff_group_id,
-                        dateStart: planningJson.date_start.substring(0, 10),
-                        dateEnd: planningJson.date_end.substring(0, 10),
-                        driverId: planningJson.driver_id,
-                        helpers: helpersArray,
-                        days: [...planningJson.days],
-                        
-                        isValidated: false,
-                        isValid: false,
-                        isValidating: false,
-                        errors: [],
-                        suggestions: [],
-                        successMessage: '',
-
-                        onFieldChange() {
-                            this.isValidated = false;
-                            this.isValid = false;
-                        },
-
-                        async validateAvailability() {
-                            if (!this.dateStart || !this.dateEnd || !this.staffGroupId || !this.driverId || this.days.length === 0) {
-                                alert('Por favor complete todos los campos requeridos (Fechas, Conductor y al menos un Día).');
-                                return;
-                            }
-
-                            this.isValidating = true;
-                            this.errors = [];
-                            this.suggestions = [];
-
-                            try {
-                                const response = await fetch('{{ route("admin.planning.validate") }}', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                    },
-                                    body: JSON.stringify({
-                                        date_start: this.dateStart,
-                                        date_end: this.dateEnd,
-                                        staff_group_id: this.staffGroupId,
-                                        driver_id: this.driverId,
-                                        helpers: this.helpers,
-                                        days: this.days,
-                                        planning_id: this.planningId
-                                    })
-                                });
-
-                                const data = await response.json();
-                                this.isValidated = true;
-                                this.isValid = data.valid;
-                                this.errors = data.errors || [];
-                                this.suggestions = data.suggestions || [];
-                                if (this.isValid) {
-                                    this.successMessage = '¡Disponibilidad validada con éxito! Todos los miembros y el vehículo están disponibles.';
-                                }
-                            } catch (err) {
-                                console.error(err);
-                                alert('Ocurrió un error al validar la disponibilidad.');
-                            } finally {
-                                this.isValidating = false;
-                            }
-                        },
-
-                        applySuggestion(sug) {
-                            if (sug.type === 'driver') {
-                                this.driverId = sug.suggested_staff_id;
-                            } else if (sug.type === 'helper') {
-                                this.helpers = this.helpers.filter(id => id != sug.conflicting_staff_id);
-                                if (!this.helpers.includes(sug.suggested_staff_id)) {
-                                    this.helpers.push(sug.suggested_staff_id);
-                                }
-                            }
-                            this.validateAvailability();
-                        }
-                    };
-                }
-            </script>
         </div>
     </turbo-frame>
 </x-app-layout>

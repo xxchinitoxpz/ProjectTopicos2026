@@ -18,52 +18,96 @@
                 </button>
             </div>
 
-            <!-- Table log -->
-            <div class="border border-gray-150 rounded-xl overflow-hidden shadow-xs bg-white">
-                <div class="max-h-96 overflow-y-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="border-b border-gray-150 text-gray-450 font-bold uppercase bg-gray-50/70">
-                                <th class="py-3 px-4" width="140">Fecha y Hora</th>
-                                <th class="py-3 px-4" width="130">Usuario</th>
-                                <th class="py-3 px-4" width="100">Acción</th>
-                                <th class="py-3 px-4">Detalles de Cambios</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 text-gray-700">
-                            @forelse($history as $log)
-                                <tr class="hover:bg-gray-50/30 transition">
-                                    <td class="py-3 px-4 font-medium text-gray-550">
-                                        {{ \Carbon\Carbon::parse($log->created_at)->format('d/m/Y H:i:s') }}
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <div class="font-bold text-gray-900 leading-tight">{{ $log->user?->name }}</div>
-                                        <div class="text-[9px] text-gray-400">{{ $log->user?->email }}</div>
-                                    </td>
-                                    <td class="py-3 px-4 text-center">
-                                        @if($log->action === 'created')
-                                            <span class="px-2 py-0.5 text-[9px] font-bold bg-blue-50 text-usat-blue rounded-md border border-blue-100">CREADO</span>
-                                        @elseif($log->action === 'updated')
-                                            <span class="px-2 py-0.5 text-[9px] font-bold bg-amber-50 text-usat-gold rounded-md border border-amber-100">MODIFICADO</span>
-                                        @elseif($log->action === 'finished')
-                                            <span class="px-2 py-0.5 text-[9px] font-bold bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100">FINALIZADO</span>
-                                        @else
-                                            <span class="px-2 py-0.5 text-[9px] font-bold bg-red-50 text-red-650 rounded-md border border-red-100">{{ strtoupper($log->action) }}</span>
-                                        @endif
-                                    </td>
-                                    <td class="py-3 px-4 text-gray-650 font-medium whitespace-pre-line text-xs leading-relaxed">
-                                        {{ $log->details }}
-                                    </td>
+            <!-- Personal Asignado Section -->
+            <div class="space-y-3">
+                <h4 class="text-xs font-bold text-gray-800 flex items-center uppercase tracking-wide">
+                    <svg class="w-4 h-4 me-1.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    Personal Asignado
+                </h4>
+                <div class="border border-gray-150 rounded-xl overflow-hidden bg-white shadow-xs divide-y divide-gray-100">
+                    <!-- Conductor row -->
+                    <div class="flex items-center justify-between p-3 text-xs">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 text-[9px] font-bold bg-blue-600 text-white rounded-lg">Conductor</span>
+                            <span class="font-semibold text-gray-850">{{ $planning->driver?->name }} {{ $planning->driver?->last_name }}</span>
+                        </div>
+                    </div>
+                    <!-- Helpers rows -->
+                    @forelse($planning->helpers as $helper)
+                        <div class="flex items-center justify-between p-3 text-xs">
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-0.5 text-[9px] font-bold bg-emerald-600 text-white rounded-lg">Ayudante</span>
+                                <span class="font-medium text-gray-750">{{ $helper->name }} {{ $helper->last_name }}</span>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="p-3 text-xs text-gray-400 italic">
+                            Sin ayudantes asignados para este día.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- Audit Changes log -->
+            <div class="space-y-3">
+                <h4 class="text-xs font-bold text-gray-800 flex items-center uppercase tracking-wide">
+                    <svg class="w-4 h-4 me-1.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Historial de Cambios
+                </h4>
+                <div class="border border-gray-150 rounded-xl overflow-hidden shadow-xs bg-white">
+                    <div class="max-h-96 overflow-y-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="border-b border-gray-150 text-gray-450 font-bold uppercase bg-gray-50/70 text-[10px]">
+                                    <th class="py-3 px-4" width="130">Fecha</th>
+                                    <th class="py-3 px-4" width="100">Tipo</th>
+                                    <th class="py-3 px-4" width="130">Anterior</th>
+                                    <th class="py-3 px-4" width="130">Nuevo</th>
+                                    <th class="py-3 px-4">Motivo</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="py-6 text-center text-gray-400 italic">
-                                        No se registran modificaciones para esta programación.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-gray-700 text-[11px]">
+                                @forelse($history as $log)
+                                    <tr class="hover:bg-gray-50/30 transition">
+                                        <td class="py-3 px-4 font-medium text-gray-550">
+                                            {{ \Carbon\Carbon::parse($log->created_at)->format('d/m/Y H:i') }}
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            @if($log->change_type === 'turno')
+                                                <span class="px-2 py-0.5 text-[9px] font-bold bg-amber-50 text-amber-700 rounded-md border border-amber-100">Turno</span>
+                                            @elseif($log->change_type === 'vehiculo')
+                                                <span class="px-2 py-0.5 text-[9px] font-bold bg-blue-50 text-blue-700 rounded-md border border-blue-100">Vehículo</span>
+                                            @elseif($log->change_type === 'conductor' || $log->change_type === 'helper')
+                                                <span class="px-2 py-0.5 text-[9px] font-bold bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100">Personal</span>
+                                            @else
+                                                <span class="px-2 py-0.5 text-[9px] font-bold bg-gray-55 text-gray-600 rounded-md border border-gray-200 capitalize">{{ $log->change_type }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-4 font-semibold text-gray-800">
+                                            {{ $log->old_value }}
+                                        </td>
+                                        <td class="py-3 px-4 font-semibold text-gray-900">
+                                            {{ $log->new_value }}
+                                        </td>
+                                        <td class="py-3 px-4 text-gray-650 leading-relaxed">
+                                            <div class="font-bold text-gray-800 text-[10px]">{{ $log->reason_type }}</div>
+                                            <div class="text-gray-500 whitespace-pre-line">{{ $log->details }}</div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="py-6 text-center text-gray-400 italic">
+                                            No se registran modificaciones para esta programación.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 

@@ -10,15 +10,18 @@ class PlanningChange extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'planning_id',
+        'planning_day_id',
         'user_id',
-        'action',
+        'change_type',
+        'old_value',
+        'new_value',
+        'reason_type',
         'details',
     ];
 
-    public function planning(): BelongsTo
+    public function planningDay(): BelongsTo
     {
-        return $this->belongsTo(Planning::class);
+        return $this->belongsTo(PlanningDay::class, 'planning_day_id');
     }
 
     public function user(): BelongsTo

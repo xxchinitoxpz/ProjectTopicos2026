@@ -84,8 +84,8 @@
                             <th class="py-3.5 px-6">Grupo de Personal</th>
                             <th class="py-3.5 px-6">Conductor</th>
                             <th class="py-3.5 px-6">Ayudantes</th>
-                            <th class="py-3.5 px-6">Período de Programación</th>
-                            <th class="py-3.5 px-6">Días Programados</th>
+                            <th class="py-3.5 px-6">Fecha Programada</th>
+                            <th class="py-3.5 px-6">Día Programado</th>
                             <th class="py-3.5 px-6 text-center">Estado</th>
                             <th class="py-3.5 px-6 text-center" width="160">Acciones</th>
                         </tr>
@@ -132,20 +132,13 @@
                                         <svg class="w-3.5 h-3.5 text-gray-400 me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                         </svg>
-                                        {{ $planning->date_start->format('d/m/Y') }} - {{ $planning->date_end->format('d/m/Y') }}
-                                    </div>
-                                    <div class="text-[9px] text-gray-400 mt-0.5">
-                                        Duración: {{ $planning->date_start->diffInDays($planning->date_end) + 1 }} días
+                                        {{ $planning->date->format('d/m/Y') }}
                                     </div>
                                 </td>
                                 <td class="py-3.5 px-6">
-                                    <div class="flex flex-wrap gap-1 max-w-[180px]">
-                                        @foreach($planning->days as $day)
-                                            <span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded capitalize">
-                                                {{ substr($day, 0, 2) }}
-                                            </span>
-                                        @endforeach
-                                    </div>
+                                    <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-md border border-emerald-100 capitalize">
+                                        {{ $planning->date->locale('es')->dayName }}
+                                    </span>
                                 </td>
                                 <td class="py-3.5 px-6 text-center">
                                     @if($planning->state === 'active')
@@ -216,18 +209,18 @@
         </div>
 
         <!-- Bulk Scheduling Modal (Alpine.js controlled) -->
-        <div x-show="bulkModalOpen" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+        <div x-show="bulkModalOpen" x-data="bulkPlanningForm({{ $groups->toJson() }}, {{ $drivers->toJson() }}, {{ $helpers->toJson() }})" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
             <div class="flex items-center justify-center min-h-screen px-4 py-8">
                 <!-- Backdrop -->
                 <div @click="bulkModalOpen = false" class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
 
                 <!-- Modal Content -->
-                <div class="relative bg-white rounded-2xl shadow-xl border border-gray-100 max-w-2xl w-full p-6 sm:p-8 overflow-hidden z-10 transition-all">
+                <div class="relative bg-white rounded-2xl shadow-xl border border-gray-100 max-w-6xl w-full p-6 sm:p-8 overflow-hidden z-10 transition-all">
                     <!-- Header -->
                     <div class="flex items-center justify-between pb-4 border-b border-gray-100">
                         <div>
                             <h3 class="text-lg font-bold text-usat-blue">Programación Masiva</h3>
-                            <p class="text-xs text-gray-400">Crea programaciones para múltiples grupos utilizando sus datos predeterminados.</p>
+                            <p class="text-xs text-gray-400">Crea programaciones para múltiples grupos con asignaciones personalizadas y exclusión de feriados.</p>
                         </div>
                         <button type="button" @click="bulkModalOpen = false" class="text-gray-400 hover:text-gray-500 transition focus:outline-none">
                             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -239,56 +232,210 @@
                     <!-- Form -->
                     <form action="{{ route('admin.planning.bulk') }}" method="POST" class="mt-6 space-y-6">
                         @csrf
+                        
+                        <!-- Hidden parameters representing Alpine state -->
+                        <input type="hidden" name="group_assignments" :value="JSON.stringify(groupAssignments)">
+                        <template x-for="groupId in selectedGroups">
+                            <input type="hidden" name="group_ids[]" :value="groupId">
+                        </template>
+                        <template x-for="holDate in excludedHolidays">
+                            <input type="hidden" name="excluded_holidays[]" :value="holDate">
+                        </template>
 
-                        <!-- Dates Grid -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Date Range and Validation Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end bg-gray-55 p-4 rounded-xl border border-gray-200">
                             <div>
-                                <x-input-label for="bulk_date_start" :value="__('Fecha de Inicio')" />
-                                <x-text-input id="bulk_date_start" name="date_start" type="date" value="{{ date('Y-m-d') }}" class="block mt-1 w-full text-sm" required />
+                                <x-input-label for="bulk_date_start" :value="__('Fecha de Inicio *')" />
+                                <x-text-input id="bulk_date_start" name="date_start" type="date" x-model="dateStart" @change="onFieldChange()" class="block mt-1 w-full text-xs font-semibold" required />
                             </div>
 
                             <div>
-                                <x-input-label for="bulk_date_end" :value="__('Fecha de Fin')" />
-                                <x-text-input id="bulk_date_end" name="date_end" type="date" value="{{ date('Y-m-d', strtotime('+14 days')) }}" class="block mt-1 w-full text-sm" required />
+                                <x-input-label for="bulk_date_end" :value="__('Fecha de Fin *')" />
+                                <x-text-input id="bulk_date_end" name="date_end" type="date" x-model="dateEnd" @change="onFieldChange()" class="block mt-1 w-full text-xs font-semibold" required />
+                            </div>
+
+                            <div>
+                                <button type="button" @click="validateAvailability()" :disabled="isValidating"
+                                        class="w-full flex items-center justify-center px-4 py-2.5 bg-blue-50 border border-blue-200 text-usat-blue hover:bg-blue-100 disabled:opacity-50 text-xs font-bold rounded-xl transition">
+                                    <svg x-show="isValidating" class="animate-spin -ml-1 mr-3 h-4 w-4 text-usat-blue" fill="none" viewBox="0 0 24 24" style="display: none;">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Validar disponibilidad
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Groups Selection List -->
-                        <div class="space-y-2" x-data="{
-                            selected: [],
-                            allIds: [{{ $groups->pluck('id')->join(', ') }}],
-                            toggleAll() {
-                                if (this.selected.length === this.allIds.length) {
-                                    this.selected = [];
-                                } else {
-                                    this.selected = [...this.allIds];
-                                }
-                            }
-                        }">
-                            <div class="flex items-center justify-between">
-                                <x-input-label :value="__('Seleccionar Grupos de Personal')" />
-                                <button type="button" @click="toggleAll()" class="text-xs font-bold text-usat-blue hover:underline">
-                                    Seleccionar / Deseleccionar Todo
-                                </button>
+                        <!-- Turn Filtering & Holidays Panel -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Left: Shift buttons -->
+                            <div class="md:col-span-1 space-y-2">
+                                <x-input-label :value="__('Filtrar por Turno')" />
+                                <div class="flex flex-wrap gap-1.5">
+                                    <template x-for="t in ['all', 'Mañana', 'Tarde', 'Noche']">
+                                        <button type="button" 
+                                                @click="shiftFilter = t"
+                                                :class="shiftFilter === t ? 'bg-usat-blue text-white border-usat-blue' : 'bg-gray-100 text-gray-700 hover:bg-gray-250 border-gray-200'"
+                                                class="px-3 py-1.5 text-xs font-bold rounded-lg transition border"
+                                                x-text="t === 'all' ? 'Todos los Turnos' : t">
+                                        </button>
+                                    </template>
+                                </div>
                             </div>
-                            
-                            <div class="border border-gray-200 rounded-xl max-h-56 overflow-y-auto divide-y divide-gray-100 p-2 bg-gray-50/50">
-                                @forelse($groups as $group)
-                                    <label class="flex items-center py-2 px-3 hover:bg-white rounded-lg transition cursor-pointer select-none">
-                                        <input type="checkbox" name="group_ids[]" value="{{ $group->id }}" x-model="selected"
-                                               class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 me-3">
-                                        <div>
-                                            <div class="text-sm font-semibold text-gray-800">{{ $group->name }}</div>
-                                            <div class="text-[10px] text-gray-400">
-                                                Conductor: {{ $group->driver?->name }} | Días: {{ implode(', ', $group->days) }}
+
+                            <!-- Right: Holidays selection checklist -->
+                            <div class="md:col-span-2 space-y-2">
+                                <x-input-label :value="__('Días Feriados en el Rango Seleccionado')" />
+                                <div class="border border-gray-200 rounded-xl p-3 bg-gray-50/50 min-h-[50px] max-h-[85px] overflow-y-auto">
+                                    <template x-if="holidays.length === 0">
+                                        <p class="text-[10px] text-gray-400 italic">No se detectaron feriados en este rango de fechas.</p>
+                                    </template>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <template x-for="hol in holidays" :key="hol.date">
+                                            <label class="flex items-center text-[10px] font-semibold text-gray-700 cursor-pointer select-none">
+                                                <input type="checkbox" :value="hol.date" x-model="excludedHolidays" @change="onFieldChange()"
+                                                       class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 me-2 w-3.5 h-3.5">
+                                                <span x-text="hol.formatted_date + ' (' + hol.description + ')'"></span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+                                <p class="text-[9px] text-blue-600 font-medium">ℹ Los feriados seleccionados NO serán programados, incluso si el grupo trabaja ese día.</p>
+                            </div>
+                        </div>
+
+                        <!-- Work Groups Customization Cards Grid -->
+                        <div class="space-y-3">
+                            <x-input-label :value="__('Grupos de Trabajo a Programar')" />
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-h-96 overflow-y-auto p-3 bg-gray-55 rounded-xl border border-gray-200">
+                                <template x-for="group in filteredGroups()" :key="group.id">
+                                    <div class="relative bg-white p-4 rounded-xl border border-gray-200 shadow-xs space-y-3 transition"
+                                         :class="!selectedGroups.includes(group.id) ? 'opacity-40 border-dashed bg-gray-50' : 'border-solid bg-white'">
+                                        
+                                        <!-- Header card details -->
+                                        <div class="flex items-start justify-between">
+                                            <div>
+                                                <div class="text-xs font-bold text-gray-900" x-text="group.name"></div>
+                                                <div class="text-[9px] text-gray-400 font-semibold mt-0.5" x-text="'Zona: ' + (group.zone ? group.zone.name : 'N/A')"></div>
+                                                <div class="text-[9px] text-gray-400 font-semibold" x-text="'Turno: ' + (group.shift ? group.shift.name : 'N/A')"></div>
+                                            </div>
+                                            <div class="flex items-center space-x-1.5">
+                                                <!-- Include/Exclude Toggle -->
+                                                <input type="checkbox" :value="group.id" x-model="selectedGroups" @change="onGroupSelectToggle(group.id)"
+                                                       class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
+                                                <button type="button" @click="removeGroup(group.id)" class="text-red-500 hover:text-red-700 transition" title="Remover de lista">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </div>
-                                    </label>
-                                @empty
-                                    <div class="text-center py-6 text-gray-400 text-sm">
-                                        No hay grupos de personal activos disponibles.
+
+                                        <div class="text-[9px] flex flex-wrap gap-1">
+                                            <span class="px-1.5 py-0.5 bg-blue-50 text-usat-blue font-bold rounded" x-text="'Placa: ' + (group.vehicle ? group.vehicle.plate : 'N/A')"></span>
+                                            <span class="px-1.5 py-0.5 bg-purple-50 text-purple-700 font-bold rounded capitalize" x-text="'Días: ' + group.days.join(', ')"></span>
+                                        </div>
+
+                                        <!-- Driver dropdown -->
+                                        <div class="space-y-1">
+                                            <span class="text-[9px] font-bold text-gray-500">Conductor Principal:</span>
+                                            <select x-model="groupAssignments[group.id].driver_id" @change="onFieldChange()" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 text-[10px] py-1">
+                                                <option value="">Seleccione conductor...</option>
+                                                <template x-for="driver in allDrivers" :key="driver.id">
+                                                    <option :value="driver.id" x-text="driver.name + ' ' + driver.last_name"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+
+                                        <!-- Helpers dropdowns -->
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div class="space-y-1">
+                                                <span class="text-[9px] font-bold text-gray-500">Ayudante 1:</span>
+                                                <select x-model="groupAssignments[group.id].helpers[0]" @change="onFieldChange()" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 text-[10px] py-1">
+                                                    <option value="">Ninguno...</option>
+                                                    <template x-for="helper in allHelpers" :key="helper.id">
+                                                        <option :value="helper.id" x-text="helper.name + ' ' + helper.last_name" :disabled="groupAssignments[group.id].helpers[1] == helper.id"></option>
+                                                    </template>
+                                                </select>
+                                            </div>
+                                            <div class="space-y-1">
+                                                <span class="text-[9px] font-bold text-gray-500">Ayudante 2:</span>
+                                                <select x-model="groupAssignments[group.id].helpers[1]" @change="onFieldChange()" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 text-[10px] py-1">
+                                                    <option value="">Ninguno...</option>
+                                                    <template x-for="helper in allHelpers" :key="helper.id">
+                                                        <option :value="helper.id" x-text="helper.name + ' ' + helper.last_name" :disabled="groupAssignments[group.id].helpers[0] == helper.id"></option>
+                                                    </template>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
-                                @endforelse
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- General Validation Alerts -->
+                        <div x-show="isValidated" style="display: none;" class="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
+                            <h4 class="text-sm font-bold text-gray-900 flex items-center">
+                                <svg class="w-4 h-4 me-1.5 text-usat-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Resultado de Validación General
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto">
+                                <template x-for="groupId in selectedGroups" :key="groupId">
+                                    <div x-show="validationResults[groupId]" class="p-3 bg-white border border-gray-200 rounded-lg shadow-xs space-y-2">
+                                        <div class="flex items-center justify-between pb-1.5 border-b border-gray-100">
+                                            <span class="text-xs font-bold text-gray-900" x-text="validationResults[groupId].group_name"></span>
+                                            <template x-if="validationResults[groupId].valid">
+                                                <span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 font-bold rounded text-[9px] border border-emerald-100">DISPONIBLE</span>
+                                            </template>
+                                            <template x-if="!validationResults[groupId].valid">
+                                                <span class="px-1.5 py-0.5 bg-red-50 text-red-650 font-bold rounded text-[9px] border border-red-100">CON ERRORES</span>
+                                            </template>
+                                        </div>
+
+                                        <!-- Errors -->
+                                        <template x-if="validationResults[groupId].errors && validationResults[groupId].errors.length > 0">
+                                            <div class="text-red-800 space-y-1">
+                                                <div class="text-[9px] font-bold uppercase">Errores:</div>
+                                                <ul class="list-disc list-inside text-[9px] space-y-0.5">
+                                                    <template x-for="err in validationResults[groupId].errors">
+                                                        <li x-text="err"></li>
+                                                    </template>
+                                                </ul>
+                                            </div>
+                                        </template>
+
+                                        <!-- Warnings -->
+                                        <template x-if="validationResults[groupId].warnings && validationResults[groupId].warnings.length > 0">
+                                            <div class="text-amber-800 space-y-1">
+                                                <div class="text-[9px] font-bold uppercase">Advertencias / Info:</div>
+                                                <ul class="list-disc list-inside text-[9px] space-y-0.5">
+                                                    <template x-for="war in validationResults[groupId].warnings">
+                                                        <li x-text="war"></li>
+                                                    </template>
+                                                </ul>
+                                            </div>
+                                        </template>
+
+                                        <!-- Suggestions -->
+                                        <template x-if="validationResults[groupId].suggestions && validationResults[groupId].suggestions.length > 0">
+                                            <div class="pt-2 border-t border-gray-100 space-y-1">
+                                                <div class="text-[9px] text-gray-500 font-bold uppercase">Sugerencias de Reemplazo:</div>
+                                                <div class="space-y-1">
+                                                    <template x-for="sug in validationResults[groupId].suggestions" :key="sug.suggested_staff_id">
+                                                        <div class="flex items-center justify-between bg-gray-50 p-1.5 rounded border border-gray-200 text-[9px]">
+                                                            <span>Reemplazar a <strong x-text="sug.conflicting_staff_name"></strong> con <strong class="text-emerald-700" x-text="sug.suggested_staff_name"></strong></span>
+                                                            <button type="button" @click="applySuggestion(groupId, sug)" class="px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 font-bold rounded transition text-[9px]">
+                                                                Aplicar
+                                                            </button>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
                             </div>
                         </div>
 
@@ -297,8 +444,9 @@
                             <button type="button" @click="bulkModalOpen = false" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold rounded-xl transition">
                                 Cancelar
                             </button>
-                            <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-bold rounded-xl transition shadow-lg shadow-emerald-600/10">
-                                Generar Programaciones
+                            <button type="submit" :disabled="!isValidated || !isValid" 
+                                    class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-bold rounded-xl transition shadow-lg shadow-emerald-600/10 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Guardar Programaciones
                             </button>
                         </div>
                     </form>
@@ -307,7 +455,7 @@
         </div>
     </div>
 
-    <!-- Alpine.js global scheduling component definition -->
+    <!-- Alpine.js global scheduling components definition -->
     <script>
         window.planningForm = function(groupsJson, planningJson = null, helpersArray = []) {
             return {
@@ -403,6 +551,140 @@
                     this.validateAvailability();
                 }
             };
-        }
+        };
+
+        window.bulkPlanningForm = function(groupsJson, driversJson, helpersJson) {
+            return {
+                groups: groupsJson,
+                allDrivers: driversJson,
+                allHelpers: helpersJson,
+
+                dateStart: '{{ date("Y-m-d") }}',
+                dateEnd: '{{ date("Y-m-d", strtotime("+14 days")) }}',
+                
+                holidays: [],
+                excludedHolidays: [],
+                shiftFilter: 'all',
+                
+                selectedGroups: [],
+                groupAssignments: {},
+
+                isValidated: false,
+                isValid: false,
+                isValidating: false,
+                validationResults: {},
+                generalErrors: [],
+
+                init() {
+                    this.groups.forEach(g => {
+                        this.groupAssignments[g.id] = {
+                            driver_id: g.driver_id || '',
+                            helpers: g.helpers ? g.helpers.map(h => h.id) : []
+                        };
+                    });
+                    this.selectedGroups = this.groups.map(g => g.id);
+
+                    this.$watch('dateStart', () => this.fetchHolidays());
+                    this.$watch('dateEnd', () => this.fetchHolidays());
+                    this.fetchHolidays();
+                },
+
+                async fetchHolidays() {
+                    if (!this.dateStart || !this.dateEnd) return;
+                    try {
+                        const url = `{{ route('admin.planning.get-holidays') }}?date_start=${this.dateStart}&date_end=${this.dateEnd}`;
+                        const response = await fetch(url);
+                        this.holidays = await response.json();
+                        this.excludedHolidays = [];
+                    } catch (err) {
+                        console.error(err);
+                    }
+                },
+
+                filteredGroups() {
+                    if (this.shiftFilter === 'all') {
+                        return this.groups;
+                    }
+                    return this.groups.filter(g => g.shift && g.shift.name.toLowerCase().includes(this.shiftFilter.toLowerCase()));
+                },
+
+                onGroupSelectToggle(groupId) {
+                    this.isValidated = false;
+                    this.isValid = false;
+                },
+
+                onFieldChange() {
+                    this.isValidated = false;
+                    this.isValid = false;
+                },
+
+                async validateAvailability() {
+                    if (this.selectedGroups.length === 0) {
+                        alert('Debe seleccionar al menos un grupo de trabajo.');
+                        return;
+                    }
+
+                    this.isValidating = true;
+                    this.generalErrors = [];
+                    this.validationResults = {};
+
+                    const payloadGroups = this.selectedGroups.map(groupId => {
+                        const assign = this.groupAssignments[groupId];
+                        return {
+                            staff_group_id: groupId,
+                            driver_id: assign.driver_id,
+                            helpers: assign.helpers
+                        };
+                    });
+
+                    try {
+                        const response = await fetch('{{ route("admin.planning.validate") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                date_start: this.dateStart,
+                                date_end: this.dateEnd,
+                                excluded_holidays: this.excludedHolidays,
+                                groups: payloadGroups
+                            })
+                        });
+
+                        const data = await response.json();
+                        this.isValidated = true;
+                        this.isValid = data.valid;
+                        this.validationResults = data.results || {};
+                    } catch (err) {
+                        console.error(err);
+                        alert('Ocurrió un error al validar la disponibilidad.');
+                    } finally {
+                        this.isValidating = false;
+                    }
+                },
+
+                applySuggestion(groupId, sug) {
+                    const assign = this.groupAssignments[groupId];
+                    if (assign) {
+                        if (sug.type === 'driver') {
+                            assign.driver_id = sug.suggested_staff_id;
+                        } else if (sug.type === 'helper') {
+                            assign.helpers = assign.helpers.filter(id => id != sug.conflicting_staff_id);
+                            if (!assign.helpers.includes(sug.suggested_staff_id)) {
+                                assign.helpers.push(sug.suggested_staff_id);
+                            }
+                        }
+                        this.validateAvailability();
+                    }
+                },
+
+                removeGroup(groupId) {
+                    this.selectedGroups = this.selectedGroups.filter(id => id != groupId);
+                    this.isValidated = false;
+                    this.isValid = false;
+                }
+            };
+        };
     </script>
 </x-app-layout>
