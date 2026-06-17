@@ -462,7 +462,9 @@ class PlanningController extends Controller
                 $groupModel = StaffGroup::find($gId);
                 if (!$groupModel) continue;
 
-                $gDays = $groupModel->days;
+                $gDays = !empty($gInfo['days']) && is_array($gInfo['days'])
+                    ? $gInfo['days']
+                    : $groupModel->days;
                 $gScheduledDates = $this->getScheduledDates($dateStart, $dateEnd, $gDays);
                 $gScheduledDates = array_filter($gScheduledDates, function ($date) use ($excludedHolidays) {
                     return !in_array($date->format('Y-m-d'), $excludedHolidays);
@@ -562,7 +564,9 @@ class PlanningController extends Controller
                     ? $groupAssignments[$groupId]['helpers']
                     : $group->helpers->pluck('id')->toArray();
 
-                $days = $group->days;
+                $days = isset($groupAssignments[$groupId]['days']) && is_array($groupAssignments[$groupId]['days']) && count($groupAssignments[$groupId]['days']) > 0
+                    ? $groupAssignments[$groupId]['days']
+                    : $group->days;
 
                 $dates = $this->getScheduledDates($dateStart, $dateEnd, $days);
                 

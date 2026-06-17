@@ -304,6 +304,28 @@
                             </div>
                         </div>
 
+                        <!-- Bulk Days Apply to All Selected Groups -->
+                        <div class="space-y-2 bg-purple-50/50 p-4 rounded-xl border border-purple-100">
+                            <x-input-label :value="__('Aplicar días de trabajo a todos los grupos seleccionados')" />
+                            <div class="flex flex-wrap items-center gap-3">
+                                <div class="flex flex-wrap gap-2">
+                                    <template x-for="day in weekDays" :key="day">
+                                        <label class="flex items-center text-[10px] font-semibold text-gray-700 capitalize cursor-pointer select-none px-2 py-1 bg-white rounded-lg border border-gray-200">
+                                            <input type="checkbox" :value="day" x-model="globalDays"
+                                                   class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 me-1.5 w-3.5 h-3.5">
+                                            <span x-text="day"></span>
+                                        </label>
+                                    </template>
+                                </div>
+                                <button type="button" @click="applyGlobalDays()"
+                                        :disabled="globalDays.length === 0 || selectedGroups.length === 0"
+                                        class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-[10px] font-bold rounded-lg transition whitespace-nowrap">
+                                    Aplicar a seleccionados
+                                </button>
+                            </div>
+                            <p class="text-[9px] text-purple-700 font-medium">Selecciona los días y aplícalos en bloque, o modifica los días de cada grupo individualmente abajo.</p>
+                        </div>
+
                         <!-- Work Groups Customization Cards Grid -->
                         <div class="space-y-3">
                             <x-input-label :value="__('Grupos de Trabajo a Programar')" />
@@ -333,7 +355,22 @@
 
                                         <div class="text-[9px] flex flex-wrap gap-1">
                                             <span class="px-1.5 py-0.5 bg-blue-50 text-usat-blue font-bold rounded" x-text="'Placa: ' + (group.vehicle ? group.vehicle.plate : 'N/A')"></span>
-                                            <span class="px-1.5 py-0.5 bg-purple-50 text-purple-700 font-bold rounded capitalize" x-text="'Días: ' + group.days.join(', ')"></span>
+                                        </div>
+
+                                        <!-- Days checkboxes per group -->
+                                        <div class="space-y-1">
+                                            <span class="text-[9px] font-bold text-gray-500">Días de Trabajo:</span>
+                                            <div class="grid grid-cols-2 gap-1">
+                                                <template x-for="day in weekDays" :key="day">
+                                                    <label class="flex items-center text-[9px] font-semibold text-gray-700 capitalize cursor-pointer select-none">
+                                                        <input type="checkbox" :value="day"
+                                                               x-model="groupAssignments[group.id].days"
+                                                               @change="onFieldChange()"
+                                                               class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 me-1 w-3 h-3">
+                                                        <span x-text="day"></span>
+                                                    </label>
+                                                </template>
+                                            </div>
                                         </div>
 
                                         <!-- Driver dropdown -->
@@ -558,6 +595,7 @@
                 groups: groupsJson,
                 allDrivers: driversJson,
                 allHelpers: helpersJson,
+                weekDays: ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'],
 
                 dateStart: '{{ date("Y-m-d") }}',
                 dateEnd: '{{ date("Y-m-d", strtotime("+14 days")) }}',
@@ -565,6 +603,7 @@
                 holidays: [],
                 excludedHolidays: [],
                 shiftFilter: 'all',
+                globalDays: [],
                 
                 selectedGroups: [],
                 groupAssignments: {},
@@ -579,7 +618,8 @@
                     this.groups.forEach(g => {
                         this.groupAssignments[g.id] = {
                             driver_id: g.driver_id || '',
-                            helpers: g.helpers ? g.helpers.map(h => h.id) : []
+                            helpers: g.helpers ? g.helpers.map(h => h.id) : [],
+                            days: g.days ? [...g.days] : []
                         };
                     });
                     this.selectedGroups = this.groups.map(g => g.id);
@@ -587,6 +627,16 @@
                     this.$watch('dateStart', () => this.fetchHolidays());
                     this.$watch('dateEnd', () => this.fetchHolidays());
                     this.fetchHolidays();
+                },
+
+                applyGlobalDays() {
+                    if (this.globalDays.length === 0) return;
+                    this.selectedGroups.forEach(groupId => {
+                        if (this.groupAssignments[groupId]) {
+                            this.groupAssignments[groupId].days = [...this.globalDays];
+                        }
+                    });
+                    this.onFieldChange();
                 },
 
                 async fetchHolidays() {
@@ -628,12 +678,24 @@
                     this.generalErrors = [];
                     this.validationResults = {};
 
+                    const groupsWithoutDays = this.selectedGroups.filter(groupId => {
+                        const assign = this.groupAssignments[groupId];
+                        return !assign || !assign.days || assign.days.length === 0;
+                    });
+
+                    if (groupsWithoutDays.length > 0) {
+                        alert('Cada grupo seleccionado debe tener al menos un día de trabajo marcado.');
+                        this.isValidating = false;
+                        return;
+                    }
+
                     const payloadGroups = this.selectedGroups.map(groupId => {
                         const assign = this.groupAssignments[groupId];
                         return {
                             staff_group_id: groupId,
                             driver_id: assign.driver_id,
-                            helpers: assign.helpers
+                            helpers: assign.helpers,
+                            days: assign.days
                         };
                     });
 
