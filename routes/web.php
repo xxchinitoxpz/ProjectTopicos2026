@@ -19,9 +19,18 @@ use App\Http\Controllers\Admin\StaffGroupController;
 use App\Http\Controllers\Admin\PlanningController;
 use Illuminate\Support\Facades\Route;
 
+
+use Illuminate\Support\Facades\Auth;
 Route::get('/', function () {
-    return view('welcome');
+    // return view('welcome');
+    if (Auth::check()) {
+        return redirect()->route('admin.index');
+    }
+    return redirect()->route('login');
 });
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 
 Route::get('/dashboard', function () {
     return view('dashboard');
