@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\HolidayController;
 use App\Http\Controllers\Admin\StaffGroupController;
 use App\Http\Controllers\Admin\PlanningController;
 use App\Http\Controllers\Admin\MaintenanceController;
+use App\Http\Controllers\Admin\MaintenanceScheduleController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -50,7 +51,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('vehicles/brand-models-by-brand/{brand}', [VehicleController::class, 'brandModelsByBrand'])
         ->name('admin.vehicle.brand-models-by-brand');
     Route::resource('vehicles', VehicleController::class)->names('admin.vehicle')->except(['show']);
-    Route::get('maintenances', [MaintenanceController::class, 'index'])->name('admin.maintenance.index');
+    Route::post('maintenances/{maintenance}/schedules/check-overlap', [MaintenanceScheduleController::class, 'checkOverlap'])
+        ->name('admin.maintenance.schedule.check-overlap');
+    Route::resource('maintenances.schedules', MaintenanceScheduleController::class)
+        ->names('admin.maintenance.schedule')
+        ->parameters(['schedules' => 'schedule'])
+        ->except(['show']);
+    Route::resource('maintenances', MaintenanceController::class)->names('admin.maintenance')->except(['show']);
 
     // Vehicle Images Management routes
     Route::get('vehicles/{vehicle}/images', [VehicleImageController::class, 'index'])->name('admin.vehicle.images.index');
