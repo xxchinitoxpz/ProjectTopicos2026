@@ -7,8 +7,6 @@ use App\Models\Maintenance;
 use App\Models\MaintenanceSchedule;
 use App\Models\Staff;
 use App\Models\Vehicle;
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -80,7 +78,7 @@ class MaintenanceScheduleController extends Controller
         $request->validate($this->rules($maintenance), $this->messages(), $this->attributes());
 
         $schedule = $maintenance->schedules()->create($this->scheduleData($request));
-        $this->generateScheduleDays($maintenance, $schedule);
+        $schedule->regenerateDays();
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -107,7 +105,7 @@ class MaintenanceScheduleController extends Controller
         $request->validate($this->rules($maintenance, $schedule->id), $this->messages(), $this->attributes());
 
         $schedule->update($this->scheduleData($request));
-        $this->generateScheduleDays($maintenance, $schedule);
+        $schedule->regenerateDays();
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -129,6 +127,7 @@ class MaintenanceScheduleController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'message' => 'Horario eliminado correctamente.',
+                'redirect' => route('admin.maintenance.schedule.index', $maintenance),
             ]);
         }
 
@@ -237,44 +236,6 @@ class MaintenanceScheduleController extends Controller
             ->where('hora_inicio', '<', $end)
             ->where('hora_fin', '>', $start)
             ->exists();
-    }
-
-    private function generateScheduleDays(Maintenance $maintenance, MaintenanceSchedule $schedule): void
-    {
-        $schedule->days()->delete();
-
-        $dayOfWeek = $this->dayNumber($schedule->dia_semana);
-        $dates = [];
-
-        foreach (CarbonPeriod::create($maintenance->fecha_inicio, $maintenance->fecha_fin) as $date) {
-            if ($date->dayOfWeek !== $dayOfWeek) {
-                continue;
-            }
-
-            $dates[] = [
-                'maintenance_schedule_id' => $schedule->id,
-                'fecha' => $date->format('Y-m-d'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        if ($dates) {
-            $schedule->days()->insert($dates);
-        }
-    }
-
-    private function dayNumber(string $day): int
-    {
-        return [
-            'domingo' => Carbon::SUNDAY,
-            'lunes' => Carbon::MONDAY,
-            'martes' => Carbon::TUESDAY,
-            'miercoles' => Carbon::WEDNESDAY,
-            'jueves' => Carbon::THURSDAY,
-            'viernes' => Carbon::FRIDAY,
-            'sabado' => Carbon::SATURDAY,
-        ][$day];
     }
 
     private function calendarMonths(Maintenance $maintenance, MaintenanceSchedule $schedule): array

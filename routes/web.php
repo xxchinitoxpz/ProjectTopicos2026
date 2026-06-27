@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\StaffGroupController;
 use App\Http\Controllers\Admin\PlanningController;
 use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\MaintenanceScheduleController;
+use App\Http\Controllers\Admin\MaintenanceScheduleDayController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -53,6 +54,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('vehicles', VehicleController::class)->names('admin.vehicle')->except(['show']);
     Route::post('maintenances/{maintenance}/schedules/check-overlap', [MaintenanceScheduleController::class, 'checkOverlap'])
         ->name('admin.maintenance.schedule.check-overlap');
+    Route::get('maintenances/{maintenance}/schedules/{schedule}/days', [MaintenanceScheduleDayController::class, 'index'])
+        ->name('admin.maintenance.schedule.days.index');
+    Route::get('maintenances/{maintenance}/schedules/{schedule}/days/{day}/edit', [MaintenanceScheduleDayController::class, 'edit'])
+        ->name('admin.maintenance.schedule.days.edit');
+    Route::put('maintenances/{maintenance}/schedules/{schedule}/days/{day}', [MaintenanceScheduleDayController::class, 'update'])
+        ->name('admin.maintenance.schedule.days.update');
     Route::resource('maintenances.schedules', MaintenanceScheduleController::class)
         ->names('admin.maintenance.schedule')
         ->parameters(['schedules' => 'schedule'])

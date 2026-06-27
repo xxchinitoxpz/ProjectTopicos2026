@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\PublicImageStorage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -20,9 +21,13 @@ class MaintenanceScheduleDay extends Model
         'realizado' => 'boolean',
     ];
 
+    public function getImageUrlAttribute(): string
+    {
+        return PublicImageStorage::url($this->imagen);
+    }
+
     public function schedule(): BelongsTo
     {
         return $this->belongsTo(MaintenanceSchedule::class, 'maintenance_schedule_id');
     }
 }
-

@@ -37,7 +37,7 @@ class MaintenanceController extends Controller
     {
         $request->validate($this->rules(), $this->messages(), $this->attributes());
 
-        Maintenance::create($this->maintenanceData($request));
+        $maintenance = Maintenance::create($this->maintenanceData($request));
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -70,7 +70,20 @@ class MaintenanceController extends Controller
 
         $request->validate($this->rules($maintenance->id), $this->messages(), $this->attributes());
 
+        $previousStart = $maintenance->fecha_inicio?->format('Y-m-d');
+        $previousEnd = $maintenance->fecha_fin?->format('Y-m-d');
         $maintenance->update($this->maintenanceData($request));
+
+        if (
+            $previousStart !== $maintenance->fecha_inicio->format('Y-m-d')
+            || $previousEnd !== $maintenance->fecha_fin->format('Y-m-d')
+        ) {
+            $maintenance->load('schedules.days');
+
+            foreach ($maintenance->schedules as $schedule) {
+                $schedule->regenerateDays();
+            }
+        }
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -98,6 +111,7 @@ class MaintenanceController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'message' => 'Mantenimiento eliminado correctamente.',
+                'redirect' => route('admin.maintenance.index'),
             ]);
         }
 

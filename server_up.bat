@@ -5,5 +5,5 @@ php artisan key:generate
 php artisan migrate:fresh --seed
 npm install
 npm run build
-
+::admin@rsu.pe password credenciales login
 pause

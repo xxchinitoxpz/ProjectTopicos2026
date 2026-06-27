@@ -15,8 +15,9 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <form action="{{ route('admin.maintenance.schedule.store', $maintenance) }}" method="POST" class="p-6 space-y-6" data-turbo="false">
+            <form action="{{ route('admin.maintenance.schedule.store', $maintenance) }}" method="POST" class="p-6 space-y-6" data-turbo="false" data-ajax-form>
                 @csrf
+                <div data-ajax-feedback class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
 
                 @include('admin.maintenances.schedules.form')
 

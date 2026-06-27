@@ -59,9 +59,10 @@
             </div>
 
             <div class="w-full xl:w-1/2 min-w-0 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <form action="{{ route('admin.maintenance.schedule.update', [$maintenance, $schedule]) }}" method="POST" class="p-6 space-y-6" data-turbo="false">
+                <form action="{{ route('admin.maintenance.schedule.update', [$maintenance, $schedule]) }}" method="POST" class="p-6 space-y-6" data-turbo="false" data-ajax-form>
                     @csrf
                     @method('PUT')
+                    <div data-ajax-feedback class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
 
                     @include('admin.maintenances.schedules.form')
 
