@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Planning;
 use App\Models\PlanningDay;
 use App\Models\PlanningChange;
+use App\Models\Motive;
 use App\Models\StaffGroup;
 use App\Models\Staff;
 use App\Models\Vacation;
@@ -230,7 +231,9 @@ class PlanningController extends Controller
         $shifts = Shift::orderBy('name')->get();
         $vehicles = Vehicle::where('status', 'active')->orderBy('plate')->get();
 
-        return view('admin.plannings.edit', compact('planning', 'groups', 'drivers', 'allStaff', 'shifts', 'vehicles'));
+        $motives = Motive::where('status', 'activo')->orderBy('name')->get();
+
+        return view('admin.plannings.edit', compact('planning', 'groups', 'drivers', 'allStaff', 'shifts', 'vehicles', 'motives'));
     }
 
     public function update(Request $request, string $id)

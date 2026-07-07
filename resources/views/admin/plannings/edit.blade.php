@@ -14,7 +14,7 @@
                 newVehicleId: '',
                 replacePerson: '', 
                 newPersonId: '',
-                motiveType: 'Imprevistos',
+                motiveType: @js($motives->first()->name ?? 'Otros'),
                 motiveDetails: '',
 
                 // Current values
@@ -248,12 +248,11 @@
                     <div>
                         <x-input-label for="motive_type" :value="__('Motivo Predefinido')" />
                         <select id="motive_type" x-model="motiveType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-opacity-50 text-xs">
-                            <option value="Imprevistos">Imprevistos</option>
-                            <option value="Falla Mecánica">Falla Mecánica</option>
-                            <option value="Inasistencia">Inasistencia</option>
-                            <option value="Mantenimiento">Mantenimiento</option>
-                            <option value="Obras en la vía">Obras en la vía</option>
-                            <option value="Otros">Otros</option>
+                            @forelse($motives as $motive)
+                                <option value="{{ $motive->name }}">{{ $motive->name }}</option>
+                            @empty
+                                <option value="Otros">Otros</option>
+                            @endforelse
                         </select>
                     </div>
 

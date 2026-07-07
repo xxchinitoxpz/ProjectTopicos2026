@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\ShiftController;
 use App\Http\Controllers\Admin\VacationController;
 use App\Http\Controllers\Admin\AssistanceController;
+use App\Http\Controllers\Admin\MotiveController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\Admin\HolidayController;
 use App\Http\Controllers\Admin\StaffGroupController;
@@ -72,6 +73,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('vacations/{vacation}/reject', [VacationController::class, 'reject'])->name('admin.vacation.reject');
 
     Route::resource('assistances', AssistanceController::class)->names('admin.assistance')->except(['show']);
+    Route::resource('motives', MotiveController::class)->names('admin.motive')->except(['show']);
 
     // Zones
     Route::get('zones-map', [ZoneController::class, 'allZonesMap'])->name('admin.zone.all-map');
