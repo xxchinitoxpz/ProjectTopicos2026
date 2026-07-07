@@ -3,7 +3,7 @@
         Programación de Grupos
     </x-slot:title>
 
-    <div class="space-y-6" x-data="{ bulkModalOpen: false }">
+    <div class="space-y-6" x-data="{ bulkModalOpen: {{ request()->boolean('open_bulk') ? 'true' : 'false' }} }">
         <!-- Header Actions -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div>

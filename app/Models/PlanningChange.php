@@ -9,6 +9,10 @@ class PlanningChange extends Model
 {
     public $timestamps = false;
 
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
+
     protected $fillable = [
         'planning_day_id',
         'user_id',
