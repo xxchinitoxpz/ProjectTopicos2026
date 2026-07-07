@@ -102,20 +102,15 @@
                         </select>
                     </div>
                 </label>
-                <label class="block min-w-0">
-                    <span class="mb-2 block text-sm font-semibold text-slate-800" style="visibility: hidden;">Buscar:</span>
-                    <div class="flex items-center-slate-300">
-                        <button type="submit"
-                                class="inline-flex h-10 w-full items-center justify-center rounded-lg bg-sky-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700">
-                            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
-                            </svg>
-                            Buscar
-                        </button>
-                    </div>
-                </label>
-
-
+                <div class="flex items-end">
+                    <button type="submit"
+                            class="inline-flex h-10 w-full items-center justify-center rounded-lg bg-sky-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700">
+                        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+                        </svg>
+                        Buscar
+                    </button>
+                </div>
             </form>
         </section>
 
@@ -144,7 +139,8 @@
                             </div>
 
                             @if ($card['show_edit_button'])
-                                <a href="{{ $card['detail_url'] }}"
+                                <a href="{{ $card['edit_url'] ?? $card['detail_url'] }}"
+                                   data-turbo-frame="modal"
                                    class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-amber-400 text-white shadow-sm transition hover:bg-amber-500"
                                    title="Editar">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,6 +203,7 @@
                             </div>
 
                             <a href="{{ $card['detail_url'] }}"
+                               data-turbo-frame="modal"
                                class="mt-4 inline-flex w-full items-center justify-center rounded-sm bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700">
                                 <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />

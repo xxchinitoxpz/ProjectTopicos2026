@@ -36,6 +36,12 @@ Route::get('/', function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+Route::get('/dashboard/cards/{group}', [DashboardController::class, 'cardDetails'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard.card-details');
+Route::patch('/dashboard/cards/{group}', [DashboardController::class, 'updateCardDetails'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard.card-details.update');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

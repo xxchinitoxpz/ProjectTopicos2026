@@ -22,8 +22,8 @@ class PlanningController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $dateStart = $request->input('date_start');
-        $dateEnd = $request->input('date_end');
+        $dateStart = $request->input('date_start', now()->toDateString());
+        $dateEnd = $request->input('date_end', now()->copy()->addDays(14)->toDateString());
         $stateFilter = $request->input('state');
         $perPage = in_array($request->input('per_page', 10), [10, 25, 50, 100])
             ? (int) $request->input('per_page', 10)

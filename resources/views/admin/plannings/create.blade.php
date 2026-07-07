@@ -30,12 +30,12 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <x-input-label for="date_start" :value="__('Fecha de inicio *')" />
-                                <x-text-input id="date_start" name="date_start" type="date" x-model="dateStart" @change="onFieldChange()" class="block mt-1 w-full text-sm" required />
+                                <x-text-input id="date_start" name="date_start" type="date" value="{{ date('Y-m-d') }}" x-model="dateStart" @change="onFieldChange()" class="block mt-1 w-full text-sm" required />
                                 <x-input-error :messages="$errors->get('date_start')" class="mt-1" />
                             </div>
                             <div>
                                 <x-input-label for="date_end" :value="__('Fecha de fin *')" />
-                                <x-text-input id="date_end" name="date_end" type="date" x-model="dateEnd" @change="onFieldChange()" class="block mt-1 w-full text-sm" required />
+                                <x-text-input id="date_end" name="date_end" type="date" value="{{ date('Y-m-d', strtotime('+14 days')) }}" x-model="dateEnd" @change="onFieldChange()" class="block mt-1 w-full text-sm" required />
                                 <x-input-error :messages="$errors->get('date_end')" class="mt-1" />
                             </div>
                         </div>

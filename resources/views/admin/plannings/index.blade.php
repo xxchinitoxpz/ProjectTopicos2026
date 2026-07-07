@@ -246,12 +246,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end bg-gray-55 p-4 rounded-xl border border-gray-200">
                             <div>
                                 <x-input-label for="bulk_date_start" :value="__('Fecha de Inicio *')" />
-                                <x-text-input id="bulk_date_start" name="date_start" type="date" x-model="dateStart" @change="onFieldChange()" class="block mt-1 w-full text-xs font-semibold" required />
+                                <x-text-input id="bulk_date_start" name="date_start" type="date" value="{{ date('Y-m-d') }}" x-model="dateStart" @change="onFieldChange()" class="block mt-1 w-full text-xs font-semibold" required />
                             </div>
 
                             <div>
                                 <x-input-label for="bulk_date_end" :value="__('Fecha de Fin *')" />
-                                <x-text-input id="bulk_date_end" name="date_end" type="date" x-model="dateEnd" @change="onFieldChange()" class="block mt-1 w-full text-xs font-semibold" required />
+                                <x-text-input id="bulk_date_end" name="date_end" type="date" value="{{ date('Y-m-d', strtotime('+14 days')) }}" x-model="dateEnd" @change="onFieldChange()" class="block mt-1 w-full text-xs font-semibold" required />
                             </div>
 
                             <div>
@@ -620,6 +620,13 @@
                             driver_id: g.driver_id || '',
                             helpers: g.helpers ? g.helpers.map(h => h.id) : [],
                             days: g.days ? [...g.days] : []
+                        };
+                        this.validationResults[g.id] = {
+                            group_name: g.name || 'Sin grupo',
+                            valid: false,
+                            errors: [],
+                            warnings: [],
+                            suggestions: []
                         };
                     });
                     this.selectedGroups = this.groups.map(g => g.id);
