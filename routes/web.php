@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ShiftController;
 use App\Http\Controllers\Admin\VacationController;
 use App\Http\Controllers\Admin\AssistanceController;
 use App\Http\Controllers\Admin\MotiveController;
+use App\Http\Controllers\Admin\ChangeController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\Admin\HolidayController;
 use App\Http\Controllers\Admin\StaffGroupController;
@@ -74,6 +75,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('assistances', AssistanceController::class)->names('admin.assistance')->except(['show']);
     Route::resource('motives', MotiveController::class)->names('admin.motive')->except(['show']);
+    Route::resource('changes', ChangeController::class)->names('admin.change')->only(['index', 'create', 'store', 'show', 'destroy']);
 
     // Zones
     Route::get('zones-map', [ZoneController::class, 'allZonesMap'])->name('admin.zone.all-map');

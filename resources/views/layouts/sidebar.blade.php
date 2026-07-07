@@ -4,7 +4,7 @@
            openVehicles: {{ request()->routeIs('admin.vehicle*') || request()->routeIs('admin.brand*') ? 'true' : 'false' }},
            openStaff: {{ request()->routeIs('admin.staff*') || request()->routeIs('admin.staff-type*') || request()->routeIs('admin.contract*') || request()->routeIs('admin.shift*') || request()->routeIs('admin.vacation*') || request()->routeIs('admin.assistance*') || request()->routeIs('admin.holiday*') ? 'true' : 'false' }},
            openSchedule: {{ request()->routeIs('admin.zone*') || request()->routeIs('admin.staff-group*') || request()->routeIs('admin.planning*') ? 'true' : 'false' }},
-           openChanges: {{ request()->routeIs('admin.motive*') ? 'true' : 'false' }},
+           openChanges: {{ request()->routeIs('admin.motive*') || request()->routeIs('admin.change*') ? 'true' : 'false' }},
            openUsers: false
        }"
        class="fixed inset-y-0 left-0 z-50 w-64 bg-usat-blue text-white transition-transform duration-300 ease-in-out transform lg:translate-x-0 lg:static lg:inset-0 flex flex-col shadow-2xl border-r border-blue-950">
@@ -159,6 +159,9 @@
                 </svg>
             </button>
             <div x-show="openChanges" class="ps-8 pe-2 py-1 space-y-1">
+                <a href="{{ route('admin.change.index') }}" class="block py-2 px-3 text-xs font-bold rounded-lg transition {{ request()->routeIs('admin.change*') ? 'text-emerald-400 bg-blue-900/40' : 'text-blue-200 hover:text-white hover:bg-blue-850' }}">
+                    • Cambios
+                </a>
                 <a href="{{ route('admin.motive.index') }}" class="block py-2 px-3 text-xs font-bold rounded-lg transition {{ request()->routeIs('admin.motive*') ? 'text-emerald-400 bg-blue-900/40' : 'text-blue-200 hover:text-white hover:bg-blue-850' }}">
                     • Motivos
                 </a>
