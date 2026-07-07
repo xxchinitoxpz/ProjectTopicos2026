@@ -1,195 +1,222 @@
 <x-app-layout>
     <x-slot:title>
-        Dashboard de Gestión RSU
+        Dashboard General
     </x-slot:title>
 
-    <div class="space-y-8">
-        <!-- Welcome Header -->
-        <div class="bg-gradient-to-r from-usat-blue to-blue-950 rounded-2xl p-6 md:p-8 text-white shadow-lg relative overflow-hidden">
-            <div class="relative z-10">
-                <h3 class="text-2xl md:text-3xl font-extrabold tracking-tight">¡Bienvenido de vuelta, {{ Auth::user()->name }}!</h3>
-                <p class="text-blue-100 mt-2 text-sm md:text-base max-w-xl">
-                    Este es el panel central de Responsabilidad Social Universitaria (RSU). Aquí puedes gestionar el reciclaje, vehículos y rutas ecológicas de la universidad.
-                </p>
+    <div class="space-y-6">
+        <section class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+                <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Dashboard General</h1>
+                <p class="mt-1 text-sm text-slate-500">Monitoreo y gestion de programaciones en tiempo real</p>
             </div>
-            <!-- Decorative SVG circles -->
-            <div class="absolute right-0 bottom-0 translate-y-1/4 translate-x-1/4 opacity-10 pointer-events-none">
-                <svg class="w-80 h-80 fill-current" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" />
+
+            <a href="{{ route('admin.planning.index') }}"
+               class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700">
+                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8m-8 5h8m-8 5h5M7 3h10a2 2 0 012 2v14l-4-3-4 3-4-3-4 3V5a2 2 0 012-2z" />
                 </svg>
-            </div>
-        </div>
+                Ir al Modulo de Programacion
+            </a>
+        </section>
 
-        <!-- Metric Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Card: Kilos Reciclados -->
-            <div class="bg-white p-6 rounded-2xl border-t-4 border-emerald-500 shadow-md border border-gray-100 flex flex-col justify-between hover:shadow-lg transition duration-200">
-                <div class="flex justify-between items-start">
+        <section class="grid gap-3 xl:grid-cols-4">
+            <article class="rounded-sm bg-sky-600 text-white shadow-sm">
+                <div class="flex min-h-[96px] items-center justify-between px-4 py-4">
                     <div>
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Kilos Reciclados</p>
-                        <h4 class="text-3xl font-extrabold text-gray-800 mt-1">1,248 kg</h4>
+                        <p class="text-3xl font-bold leading-none">{{ $totalPlannings }}</p>
+                        <p class="mt-2 text-sm font-medium text-white/90">Total Programaciones</p>
                     </div>
-                    <span class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    </span>
+                    <svg class="h-12 w-12 text-black/10" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1.5A2.5 2.5 0 0 1 22 6.5v13A2.5 2.5 0 0 1 19.5 22h-15A2.5 2.5 0 0 1 2 19.5v-13A2.5 2.5 0 0 1 4.5 4H6V3a1 1 0 0 1 1-1Zm-3 8v9.5c0 .28.22.5.5.5h15a.5.5 0 0 0 .5-.5V10H4Zm3-4H4.5a.5.5 0 0 0-.5.5V8h16V6.5a.5.5 0 0 0-.5-.5H18v1a1 1 0 1 1-2 0V5H8v1a1 1 0 1 1-2 0V5Z" />
+                    </svg>
                 </div>
-                <div class="mt-4 flex items-center text-xs">
-                    <span class="text-emerald-500 font-bold flex items-center me-2">
-                        <svg class="w-3.5 h-3.5 me-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"></path></svg>
-                        +12%
-                    </span>
-                    <span class="text-gray-400 font-medium">vs la semana pasada</span>
-                </div>
-            </div>
+            </article>
 
-            <!-- Card: Puntos Acumulados -->
-            <div class="bg-white p-6 rounded-2xl border-t-4 border-usat-gold shadow-md border border-gray-100 flex flex-col justify-between hover:shadow-lg transition duration-200">
-                <div class="flex justify-between items-start">
+            <article class="rounded-sm bg-emerald-500 text-white shadow-sm">
+                <div class="flex min-h-[96px] items-center justify-between px-4 py-4">
                     <div>
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Puntos Acumulados</p>
-                        <h4 class="text-3xl font-extrabold text-gray-800 mt-1">4,850 Pts</h4>
+                        <p class="text-3xl font-bold leading-none">{{ $completePlannings }}</p>
+                        <p class="mt-2 text-sm font-medium text-white/90">Programaciones Completas</p>
                     </div>
-                    <span class="p-3 bg-amber-50 text-usat-gold rounded-xl">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
-                    </span>
+                    <svg class="h-12 w-12 text-black/10" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M10 16.2 6.8 13l-1.4 1.4L10 19.2 19.6 9.6l-1.4-1.4zM12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z" />
+                    </svg>
                 </div>
-                <div class="mt-4 flex items-center text-xs">
-                    <span class="text-emerald-500 font-bold flex items-center me-2">
-                        <svg class="w-3.5 h-3.5 me-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"></path></svg>
-                        +8.2%
-                    </span>
-                    <span class="text-gray-400 font-medium">Incremento de canje</span>
-                </div>
-            </div>
+            </article>
 
-            <!-- Card: Campañas Activas -->
-            <div class="bg-white p-6 rounded-2xl border-t-4 border-usat-blue shadow-md border border-gray-100 flex flex-col justify-between hover:shadow-lg transition duration-200">
-                <div class="flex justify-between items-start">
+            <article class="rounded-sm bg-rose-500 text-white shadow-sm">
+                <div class="flex min-h-[96px] items-center justify-between px-4 py-4">
                     <div>
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Campañas Activas</p>
-                        <h4 class="text-3xl font-extrabold text-gray-800 mt-1">3 Campañas</h4>
+                        <p class="text-3xl font-bold leading-none">{{ $incompletePlannings }}</p>
+                        <p class="mt-2 text-sm font-medium text-white/90">Programaciones Incompletas</p>
                     </div>
-                    <span class="p-3 bg-blue-50 text-usat-blue rounded-xl">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
-                    </span>
+                    <svg class="h-12 w-12 text-black/10" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 15h-2v-2h2Zm0-4h-2V7h2Z" />
+                    </svg>
                 </div>
-                <div class="mt-4 flex items-center text-xs">
-                    <span class="text-usat-blue font-bold me-2">USAT Ecológica</span>
-                    <span class="text-gray-400 font-medium">En campus principal</span>
-                </div>
-            </div>
+            </article>
 
-            <!-- Card: Rutas Activas -->
-            <div class="bg-white p-6 rounded-2xl border-t-4 border-emerald-600 shadow-md border border-gray-100 flex flex-col justify-between hover:shadow-lg transition duration-200">
-                <div class="flex justify-between items-start">
+            <article class="rounded-sm bg-amber-400 text-slate-900 shadow-sm">
+                <div class="flex min-h-[96px] items-center justify-between px-4 py-4">
                     <div>
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Rutas de Recojo</p>
-                        <h4 class="text-3xl font-extrabold text-gray-800 mt-1">8 Activas</h4>
+                        <p class="text-3xl font-bold leading-none">{{ $missingStaffTotal }}</p>
+                        <p class="mt-2 text-sm font-medium text-slate-800">Personal Faltante</p>
                     </div>
-                    <span class="p-3 bg-green-50 text-emerald-700 rounded-xl">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
-                    </span>
+                    <svg class="h-12 w-12 text-black/10" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z" />
+                    </svg>
                 </div>
-                <div class="mt-4 flex items-center text-xs">
-                    <span class="text-emerald-600 font-bold me-2">3 Distritos</span>
-                    <span class="text-gray-400 font-medium">Cobertura de transporte</span>
-                </div>
+            </article>
+        </section>
+
+        <section class="rounded-sm border border-slate-200 bg-white px-4 py-4 shadow-sm">
+            <form method="GET" action="{{ route('dashboard') }}" class="grid gap-4 md:grid-cols-3 md:items-end">
+                <label class="block min-w-0">
+                    <span class="mb-2 block text-sm font-semibold text-slate-800">Fecha:</span>
+                    <div class="flex items-center rounded border border-slate-300 bg-slate-50">
+                        <span class="px-3 text-slate-500">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 2v4M16 2v4M3 10h18M5 6h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" />
+                            </svg>
+                        </span>
+                        <input type="date"
+                               name="date"
+                               value="{{ $selectedDate->format('Y-m-d') }}"
+                               class="w-full border-0 bg-transparent py-2.5 text-sm text-slate-700 focus:ring-0">
+                    </div>
+                </label>
+
+                <label class="block min-w-0">
+                    <span class="mb-2 block text-sm font-semibold text-slate-800">Turno:</span>
+                    <div class="flex items-center rounded border border-slate-300 bg-white">
+                        <span class="px-3 text-slate-500">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+                            </svg>
+                        </span>
+                        <select name="shift_id" class="w-full border-0 bg-transparent py-2.5 text-sm text-slate-700 focus:ring-0">
+                            <option value="">Todos los turnos</option>
+                            @foreach ($shifts as $shift)
+                                <option value="{{ $shift->id }}" @selected((string) $selectedShiftId === (string) $shift->id)>{{ $shift->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </label>
+                <label class="block min-w-0">
+                    <span class="mb-2 block text-sm font-semibold text-slate-800" style="visibility: hidden;">Buscar:</span>
+                    <div class="flex items-center-slate-300">
+                        <button type="submit"
+                                class="inline-flex h-10 w-full items-center justify-center rounded-lg bg-sky-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700">
+                            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+                            </svg>
+                            Buscar
+                        </button>
+                    </div>
+                </label>
+
+
+            </form>
+        </section>
+
+        <section class="rounded-sm border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <div class="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:gap-2">
+                <p class="font-semibold text-slate-900">Filtros activos</p>
+                <p class="text-slate-600">Fecha: {{ $selectedDateLabel }} <span class="mx-1 text-slate-300">|</span> Turno: {{ $selectedShiftName }}</p>
             </div>
-        </div>
+        </section>
 
-        <!-- Quick Actions & Activities Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left 2 Cols: Recent Activity Table -->
-            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100 lg:col-span-2">
-                <div class="flex justify-between items-center mb-6">
-                    <h4 class="text-lg font-bold text-usat-blue">Últimos Registros de Reciclaje</h4>
-                    <a href="#" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 transition">Ver todo &rarr;</a>
-                </div>
+        @if ($cards->isEmpty())
+            <section class="rounded-sm border border-dashed border-slate-300 bg-white px-8 py-10 text-center shadow-sm">
+                <p class="text-lg font-semibold text-slate-800">No hay programaciones para esta fecha</p>
+                <p class="mt-2 text-sm text-slate-500">Prueba otra fecha o cambia el turno para ver tarjetas de zonas.</p>
+            </section>
+        @else
+            <section class="grid gap-4 xl:grid-cols-3 2xl:grid-cols-4">
+                @foreach ($cards as $card)
+                    <article class="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
+                        <header class="flex items-center justify-between px-4 py-2 text-white {{ $card['is_complete'] ? 'bg-emerald-500' : 'bg-rose-500' }}">
+                            <div class="flex items-center gap-2">
+                                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2c3.87 0 7 3.13 7 7 0 5.25-7 13-7 13S5 14.25 5 9c0-3.87 3.13-7 7-7Zm0 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
+                                </svg>
+                                <span class="text-sm font-semibold">{{ $card['zone_name'] }}</span>
+                            </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm border-collapse">
-                        <thead>
-                            <tr class="border-b border-gray-100 text-gray-400 font-semibold text-xs uppercase">
-                                <th class="pb-3">Usuario / DNI</th>
-                                <th class="pb-3">Tipo Residuo</th>
-                                <th class="pb-3 text-right">Cantidad</th>
-                                <th class="pb-3 text-center">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50 text-gray-700">
-                            <tr>
-                                <td class="py-4">
-                                    <div class="font-bold">Juan Pérez</div>
-                                    <div class="text-xs text-gray-400">DNI: 72834921</div>
-                                </td>
-                                <td class="py-4 font-medium text-gray-900">Plásticos (PET)</td>
-                                <td class="py-4 text-right font-bold text-emerald-600">15.4 kg</td>
-                                <td class="py-4 text-center">
-                                    <span class="px-2.5 py-1 text-[11px] font-bold bg-emerald-50 text-emerald-700 rounded-full">Recibido</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="py-4">
-                                    <div class="font-bold">María Ramos</div>
-                                    <div class="text-xs text-gray-400">DNI: 49830211</div>
-                                </td>
-                                <td class="py-4 font-medium text-gray-900">Papel y Cartón</td>
-                                <td class="py-4 text-right font-bold text-emerald-600">22.0 kg</td>
-                                <td class="py-4 text-center">
-                                    <span class="px-2.5 py-1 text-[11px] font-bold bg-emerald-50 text-emerald-700 rounded-full">Recibido</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="py-4">
-                                    <div class="font-bold">Carlos Mendoza</div>
-                                    <div class="text-xs text-gray-400">DNI: 08342210</div>
-                                </td>
-                                <td class="py-4 font-medium text-gray-900">Vidrio</td>
-                                <td class="py-4 text-right font-bold text-emerald-600">8.5 kg</td>
-                                <td class="py-4 text-center">
-                                    <span class="px-2.5 py-1 text-[11px] font-bold bg-amber-50 text-amber-700 rounded-full">Pendiente</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                            @if ($card['show_edit_button'])
+                                <a href="{{ $card['detail_url'] }}"
+                                   class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-amber-400 text-white shadow-sm transition hover:bg-amber-500"
+                                   title="Editar">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.5-9.5a2.1 2.1 0 1 1 3 3L12 16l-4 1 1-4 8.5-8.5Z" />
+                                    </svg>
+                                </a>
+                            @else
+                                <span class="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-900">
+                                    OK
+                                </span>
+                            @endif
+                        </header>
 
-            <!-- Right 1 Col: Quick Actions -->
-            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100 space-y-6 flex flex-col justify-between">
-                <div>
-                    <h4 class="text-lg font-bold text-usat-blue mb-2">Acciones Rápidas</h4>
-                    <p class="text-xs text-gray-400">Registra actividades y alertas en tiempo real.</p>
-                </div>
+                        <div class="px-4 py-4">
+                            <div class="grid grid-cols-2 gap-4 text-center text-sm">
+                                <div>
+                                    <div class="mb-2 flex justify-center text-sky-500">
+                                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2a5 5 0 0 0-5 5c0 1.4.58 2.64 1.5 3.54V12H9v2H8v2h8v-2h-1v-2h.5V10.54A5.01 5.01 0 0 0 17 7a5 5 0 0 0-5-5Z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs text-slate-500">Turno</p>
+                                    <p class="mt-1 font-semibold text-slate-800">{{ $card['shift_name'] }}</p>
+                                </div>
+                                <div>
+                                    <div class="mb-2 flex justify-center text-amber-500">
+                                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M20 8h-3V6a2 2 0 0 0-2-2H9A2 2 0 0 0 7 6v2H4a2 2 0 0 0-2 2v5h2a3 3 0 0 0 6 0h4a3 3 0 0 0 6 0h2v-5a2 2 0 0 0-2-2Zm-5 0H9V6h6Zm-9 9a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm14 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs text-slate-500">Vehiculo</p>
+                                    <p class="mt-1 font-semibold text-slate-800">{{ $card['vehicle_name'] }}</p>
+                                </div>
+                            </div>
 
-                <div class="space-y-4">
-                    <!-- Action: Registrar Reciclaje -->
-                    <button class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg shadow-emerald-600/10">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        <span>Registrar Reciclaje</span>
-                    </button>
+                            <div class="my-4 text-center">
+                                <p class="text-xs text-slate-500">Grupo</p>
+                                <p class="mt-1 text-base font-semibold text-slate-900">{{ $card['group_name'] }}</p>
+                            </div>
 
-                    <!-- Action: Crear Alerta -->
-                    <button class="w-full bg-usat-gold hover:bg-amber-600 active:bg-amber-700 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg shadow-amber-600/10">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        <span>Crear Alerta</span>
-                    </button>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="rounded-sm bg-emerald-500 px-3 py-3 text-center text-white">
+                                    <div class="flex items-center justify-center gap-1 text-sm font-semibold">
+                                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z" />
+                                        </svg>
+                                        <span>{{ $card['present_count'] }}</span>
+                                    </div>
+                                    <p class="mt-1 text-xs font-medium">Presentes</p>
+                                </div>
+                                <div class="rounded-sm bg-rose-500 px-3 py-3 text-center text-white">
+                                    <div class="flex items-center justify-center gap-1 text-sm font-semibold">
+                                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 15h-2v-2h2Zm0-4h-2V7h2Z" />
+                                        </svg>
+                                        <span>{{ $card['missing_count'] }}</span>
+                                    </div>
+                                    <p class="mt-1 text-xs font-medium">Faltantes</p>
+                                </div>
+                            </div>
 
-                    <!-- Action: Ver Rutas -->
-                    <button class="w-full bg-usat-blue hover:bg-blue-800 active:bg-blue-900 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg shadow-blue-900/10">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
-                        <span>Ver Mapa de Rutas</span>
-                    </button>
-                </div>
-
-                <div class="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
-                    <span>Estado del Servidor</span>
-                    <span class="flex items-center text-emerald-500 font-bold">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 me-1.5 animate-pulse"></span>
-                        En línea
-                    </span>
-                </div>
-            </div>
-        </div>
+                            <a href="{{ $card['detail_url'] }}"
+                               class="mt-4 inline-flex w-full items-center justify-center rounded-sm bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700">
+                                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                                Ver Detalles
+                            </a>
+                        </div>
+                    </article>
+                @endforeach
+            </section>
+        @endif
     </div>
 </x-app-layout>
